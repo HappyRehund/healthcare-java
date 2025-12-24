@@ -1,4 +1,4 @@
-package com.rehund.healthcare.model.exception;
+package com.rehund.healthcare.model.error;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

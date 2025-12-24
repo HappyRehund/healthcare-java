@@ -40,5 +40,5 @@ public class UserRole {
 
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updaredAt;
+    private LocalDateTime updatedAt;
 }

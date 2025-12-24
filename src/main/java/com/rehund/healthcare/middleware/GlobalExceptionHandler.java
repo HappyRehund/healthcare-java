@@ -2,7 +2,10 @@ package com.rehund.healthcare.middleware;
 
 import com.rehund.healthcare.common.exception.BadRequestException;
 import com.rehund.healthcare.common.exception.ResourceNotFoundException;
-import com.rehund.healthcare.model.exception.ErrorResponse;
+import com.rehund.healthcare.common.exception.user.EmailConflictException;
+import com.rehund.healthcare.common.exception.user.UserNotFoundException;
+import com.rehund.healthcare.common.exception.user.UsernameConflictException;
+import com.rehund.healthcare.model.error.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -61,4 +64,44 @@ public class GlobalExceptionHandler {
                 .timestamp(LocalDateTime.now())
                 .build();
     }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public @ResponseBody ErrorResponse handleUserNotFoundException(
+            HttpServletRequest request,
+            UserNotFoundException ex
+    ) {
+        return ErrorResponse.builder()
+                .code(HttpStatus.NOT_FOUND.value())
+                .message(ex.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @ExceptionHandler(UsernameConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public @ResponseBody ErrorResponse handleUsernameConflictException(
+            HttpServletRequest request,
+            UsernameConflictException ex
+    ) {
+        return ErrorResponse.builder()
+                .code(HttpStatus.CONFLICT.value())
+                .message(ex.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @ExceptionHandler(EmailConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public @ResponseBody ErrorResponse handleEmailConflictException(
+            HttpServletRequest request,
+            EmailConflictException ex
+    ) {
+        return ErrorResponse.builder()
+                .code(HttpStatus.CONFLICT.value())
+                .message(ex.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
 }
