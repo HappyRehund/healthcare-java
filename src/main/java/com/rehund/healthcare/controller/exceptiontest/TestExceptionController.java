@@ -1,4 +1,4 @@
-package com.rehund.healthcare.controller.test;
+package com.rehund.healthcare.controller.exceptiontest;
 
 import com.rehund.healthcare.common.exception.BadRequestException;
 import com.rehund.healthcare.common.exception.ResourceNotFoundException;
