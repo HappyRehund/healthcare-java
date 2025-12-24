@@ -2,9 +2,7 @@ package com.rehund.healthcare.middleware;
 
 import com.rehund.healthcare.common.exception.BadRequestException;
 import com.rehund.healthcare.common.exception.ResourceNotFoundException;
-import com.rehund.healthcare.common.exception.user.EmailConflictException;
-import com.rehund.healthcare.common.exception.user.UserNotFoundException;
-import com.rehund.healthcare.common.exception.user.UsernameConflictException;
+import com.rehund.healthcare.common.exception.user.*;
 import com.rehund.healthcare.model.error.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +22,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public @ResponseBody ErrorResponse handleGenericException(
             HttpServletRequest request,
-            Exception ex
+            RuntimeException ex
     ) {
         log.error(
                 "Error happened in: {} with status code: {} and error: {}",
@@ -39,14 +37,34 @@ public class GlobalExceptionHandler {
                 .build();
     }
 
-    @ExceptionHandler(ResourceNotFoundException.class)
+    @ExceptionHandler({
+            ResourceNotFoundException.class,
+            RoleNotFoundException.class,
+            UserNotFoundException.class
+    })
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public @ResponseBody ErrorResponse handleResourceNotFoundException(
             HttpServletRequest request,
-            ResourceNotFoundException ex
+            RuntimeException ex
     ) {
         return ErrorResponse.builder()
                 .code(HttpStatus.NOT_FOUND.value())
+                .message(ex.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @ExceptionHandler({
+            EmailConflictException.class,
+            UsernameConflictException.class
+    })
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public @ResponseBody ErrorResponse handleConflictException(
+            HttpServletRequest request,
+            RuntimeException ex
+    ) {
+        return ErrorResponse.builder()
+                .code(HttpStatus.CONFLICT.value())
                 .message(ex.getMessage())
                 .timestamp(LocalDateTime.now())
                 .build();
@@ -65,43 +83,17 @@ public class GlobalExceptionHandler {
                 .build();
     }
 
-    @ExceptionHandler(UserNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public @ResponseBody ErrorResponse handleUserNotFoundException(
+    @ExceptionHandler(InvalidPasswordException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public @ResponseBody ErrorResponse handleInvalidPasswordException(
             HttpServletRequest request,
-            UserNotFoundException ex
+            InvalidPasswordException ex
     ) {
         return ErrorResponse.builder()
-                .code(HttpStatus.NOT_FOUND.value())
+                .code(HttpStatus.BAD_REQUEST.value())
                 .message(ex.getMessage())
                 .timestamp(LocalDateTime.now())
                 .build();
     }
-
-    @ExceptionHandler(UsernameConflictException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public @ResponseBody ErrorResponse handleUsernameConflictException(
-            HttpServletRequest request,
-            UsernameConflictException ex
-    ) {
-        return ErrorResponse.builder()
-                .code(HttpStatus.CONFLICT.value())
-                .message(ex.getMessage())
-                .timestamp(LocalDateTime.now())
-                .build();
-    }
-
-    @ExceptionHandler(EmailConflictException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public @ResponseBody ErrorResponse handleEmailConflictException(
-            HttpServletRequest request,
-            EmailConflictException ex
-    ) {
-        return ErrorResponse.builder()
-                .code(HttpStatus.CONFLICT.value())
-                .message(ex.getMessage())
-                .timestamp(LocalDateTime.now())
-                .build();
-    }
-
+    
 }
