@@ -95,5 +95,5 @@ public class GlobalExceptionHandler {
                 .timestamp(LocalDateTime.now())
                 .build();
     }
-    
+
 }

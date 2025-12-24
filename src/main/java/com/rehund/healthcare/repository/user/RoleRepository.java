@@ -19,5 +19,5 @@ public interface RoleRepository extends JpaRepository<Role, Long> {
         JOIN users u ON ur.user_id = u.user_id
         WHERE u.user_id = :userId
         """ , nativeQuery = true )
-    List<Role> findByUserIds(Long userId);
+    List<Role> findByUserId(Long userId);
 }
