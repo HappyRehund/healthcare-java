@@ -44,11 +44,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             } catch (InsufficientAuthenticationException e) {
                 handlerExceptionResolver.resolveException(request, response, null, e);
             }
+            return;
         }
 
         try {
-            assert authHeader != null;
-
             final String jwt = authHeader.substring(7);
             final String username = jwtService.getUsernameFromToken(jwt);
 

@@ -1,6 +1,7 @@
 package com.rehund.healthcare.middleware;
 
 import com.rehund.healthcare.common.exception.BadRequestException;
+import com.rehund.healthcare.common.exception.ForbiddenAccessException;
 import com.rehund.healthcare.common.exception.ResourceNotFoundException;
 import com.rehund.healthcare.common.exception.user.*;
 import com.rehund.healthcare.model.error.ErrorResponse;
@@ -99,6 +100,19 @@ public class GlobalExceptionHandler {
     ) {
         return ErrorResponse.builder()
                 .code(HttpStatus.BAD_REQUEST.value())
+                .message(ex.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @ExceptionHandler(ForbiddenAccessException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public @ResponseBody ErrorResponse handleForbiddenAccessException(
+            HttpServletRequest request,
+            BadRequestException ex
+    ) {
+        return ErrorResponse.builder()
+                .code(HttpStatus.FORBIDDEN.value())
                 .message(ex.getMessage())
                 .timestamp(LocalDateTime.now())
                 .build();

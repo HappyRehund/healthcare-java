@@ -26,16 +26,18 @@ public class UserDetailsImpl implements UserDetailsService {
     private final RoleRepository roleRepository;
     private final CacheService cacheService;
 
+    private final String USER_CACHE_KEY = "cache:user:";
+    private final String USER_ROLES_CACHE_KEY = "cache:user:roles:";
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        String USER_CACHE_KEY = "cache:user:";
+
         String userCacheKey = USER_CACHE_KEY + username;
-        String USER_ROLES_CACHE_KEY = "cache:user:roles:";
         String userRolesCacheKey = USER_ROLES_CACHE_KEY + username;
 
         Optional<User> userOpt = cacheService.get(userCacheKey, User.class);
         Optional<List<Role>> rolesOpt = cacheService.get(userRolesCacheKey,
-                new TypeReference<List<Role>>() {
+                new TypeReference<>() {
                 });
 
         if (userOpt.isPresent() && rolesOpt.isPresent()) {
