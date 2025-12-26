@@ -4,9 +4,14 @@ import com.rehund.healthcare.common.exception.BadRequestException;
 import com.rehund.healthcare.common.exception.ResourceNotFoundException;
 import com.rehund.healthcare.common.exception.user.*;
 import com.rehund.healthcare.model.error.ErrorResponse;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -22,8 +27,24 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public @ResponseBody ErrorResponse handleGenericException(
             HttpServletRequest request,
+            HttpServletResponse response,
             RuntimeException ex
     ) {
+        if (
+                ex instanceof AccessDeniedException
+                        || ex instanceof SignatureException
+                        || ex instanceof ExpiredJwtException
+                        || ex instanceof AuthenticationException
+        ){
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+
+            return ErrorResponse.builder()
+                    .code(HttpStatus.FORBIDDEN.value())
+                    .message(ex.getMessage())
+                    .timestamp(LocalDateTime.now())
+                    .build();
+        }
+
         log.error(
                 "Error happened in: {} with status code: {} and error: {}",
                 request.getRequestURI(),
