@@ -1,4 +1,4 @@
-package com.rehund.healthcare.controller.admin;
+package com.rehund.healthcare.controller.admin.hospital;
 
 import com.rehund.healthcare.model.hospital.HospitalRequest;
 import com.rehund.healthcare.model.hospital.HospitalResponse;

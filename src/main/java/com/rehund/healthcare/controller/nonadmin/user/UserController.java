@@ -1,4 +1,4 @@
-package com.rehund.healthcare.controller;
+package com.rehund.healthcare.controller.nonadmin.user;
 
 import com.rehund.healthcare.common.exception.ForbiddenAccessException;
 import com.rehund.healthcare.model.user.UserInfo;

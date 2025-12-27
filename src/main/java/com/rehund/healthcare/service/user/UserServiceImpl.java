@@ -5,6 +5,7 @@ import com.rehund.healthcare.common.exception.user.*;
 import com.rehund.healthcare.entity.user.Role;
 import com.rehund.healthcare.entity.user.User;
 import com.rehund.healthcare.entity.user.UserRole;
+import com.rehund.healthcare.model.user.GrantUserRoleRequest;
 import com.rehund.healthcare.model.user.UserRegisterRequest;
 import com.rehund.healthcare.model.user.UserResponse;
 import com.rehund.healthcare.model.user.UserUpdateRequest;
@@ -19,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -154,6 +156,35 @@ public class UserServiceImpl implements UserService {
         }
 
         // return UserResponse
+        return UserResponse.fromUserAndRoles(user, roles);
+    }
+
+    @Transactional
+    @Override
+    public UserResponse grantUserRole(GrantUserRoleRequest request) {
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new UserNotFoundException("User with id " + request.getUserId() + " not found"));
+
+        Role role = roleRepository.findByRoleName(request.getRoleType())
+                .orElseThrow(() -> new RoleNotFoundException("Role with role name " + request.getRoleType() + " not found"));
+
+        Optional<UserRole> userRole = userRoleRepository.findByIdUserIdAndIdRoleId(request.getUserId(), role.getRoleId());
+        if (userRole.isPresent()) {
+            throw new IllegalStateException("User with id " + request.getUserId() + " already has role " + request.getRoleType());
+        }
+
+        UserRole.UserRoleId userRoleId = new UserRole.UserRoleId();
+        userRoleId.setUserId(user.getUserId());
+        userRoleId.setRoleId(role.getRoleId());
+
+        UserRole newUserRole = UserRole
+                .builder()
+                .id(userRoleId)
+                .build();
+
+        userRoleRepository.save(newUserRole);
+
+        List<Role> roles = roleRepository.findByUserId(user.getUserId());
         return UserResponse.fromUserAndRoles(user, roles);
     }
 

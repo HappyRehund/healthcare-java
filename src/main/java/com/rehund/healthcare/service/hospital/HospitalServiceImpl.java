@@ -6,35 +6,45 @@ import com.rehund.healthcare.model.hospital.HospitalRequest;
 import com.rehund.healthcare.model.hospital.HospitalResponse;
 import com.rehund.healthcare.repository.hospital.HospitalRepository;
 import com.rehund.healthcare.service.cache.CacheService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import java.time.Duration;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 public class HospitalServiceImpl implements HospitalService {
 
     private final HospitalRepository hospitalRepository;
     private final CacheService cacheService;
 
-    private static String HOSPITAL_CACHE_KEY = "cache:hospital:";
+    private static final String HOSPITAL_CACHE_KEY = "cache:hospital:";
+    private static final Duration HOSPITAL_CACHE_TTL = Duration.ofHours(1);
 
     private Hospital getHospitalById(Long id) {
         String key = HOSPITAL_CACHE_KEY + id;
 
-        return cacheService.get(key, Hospital.class)
-                .orElseGet(() -> {
-                    return hospitalRepository.findById(id)
-                            .orElseThrow(() -> new ResourceNotFoundException("Hospital not found with id: " + id));
-                });
+        return cacheService.getOrLoad(
+                key,
+                Hospital.class,
+                HOSPITAL_CACHE_TTL,
+                () -> hospitalRepository.findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Hospital not found with id: " + id))
+        );
     }
 
     @Override
     public Page<HospitalResponse> search(String keyword, Pageable pageable) {
-        return null;
+        return hospitalRepository.findByNameContainingIgnoreCase(keyword, pageable)
+                .map(this::mapHospitalToResponse);
     }
 
     @Override
@@ -50,14 +60,25 @@ public class HospitalServiceImpl implements HospitalService {
 
         updateHospitalFromRequest(hospital, request);
         Hospital savedHospital = hospitalRepository.save(hospital);
+
         return mapHospitalToResponse(savedHospital);
     }
 
     @Override
     public HospitalResponse update(Long id, HospitalRequest request) {
+        String key = HOSPITAL_CACHE_KEY + id;
+
         Hospital hospital = getHospitalById(id);
         updateHospitalFromRequest(hospital, request);
+
         Hospital updatedHospital = hospitalRepository.save(hospital);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                cacheService.evict(key);
+            }
+        });
         return mapHospitalToResponse(updatedHospital);
     }
 
@@ -65,6 +86,9 @@ public class HospitalServiceImpl implements HospitalService {
     public void delete(Long id) {
         getHospitalById(id);
         hospitalRepository.deleteById(id);
+
+        String key = HOSPITAL_CACHE_KEY + id;
+        cacheService.evict(key);
     }
 
     private HospitalResponse mapHospitalToResponse(Hospital hospital) {

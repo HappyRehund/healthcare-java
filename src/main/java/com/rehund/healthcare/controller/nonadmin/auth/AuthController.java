@@ -1,4 +1,4 @@
-package com.rehund.healthcare.controller.auth;
+package com.rehund.healthcare.controller.nonadmin.auth;
 
 import com.rehund.healthcare.model.auth.AuthRequest;
 import com.rehund.healthcare.model.auth.AuthResponse;
