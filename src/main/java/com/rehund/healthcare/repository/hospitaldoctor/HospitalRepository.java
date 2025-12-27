@@ -1,6 +1,6 @@
-package com.rehund.healthcare.repository.hospital;
+package com.rehund.healthcare.repository.hospitaldoctor;
 
-import com.rehund.healthcare.entity.hospital.Hospital;
+import com.rehund.healthcare.entity.hospitaldoctor.Hospital;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

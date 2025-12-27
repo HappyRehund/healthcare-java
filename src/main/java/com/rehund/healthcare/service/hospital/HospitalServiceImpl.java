@@ -1,10 +1,10 @@
 package com.rehund.healthcare.service.hospital;
 
 import com.rehund.healthcare.common.exception.ResourceNotFoundException;
-import com.rehund.healthcare.entity.hospital.Hospital;
+import com.rehund.healthcare.entity.hospitaldoctor.Hospital;
 import com.rehund.healthcare.model.hospital.HospitalRequest;
 import com.rehund.healthcare.model.hospital.HospitalResponse;
-import com.rehund.healthcare.repository.hospital.HospitalRepository;
+import com.rehund.healthcare.repository.hospitaldoctor.HospitalRepository;
 import com.rehund.healthcare.service.cache.CacheService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

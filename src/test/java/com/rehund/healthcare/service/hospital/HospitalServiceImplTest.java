@@ -1,9 +1,9 @@
 package com.rehund.healthcare.service.hospital;
 
-import com.rehund.healthcare.entity.hospital.Hospital;
+import com.rehund.healthcare.entity.hospitaldoctor.Hospital;
 import com.rehund.healthcare.model.hospital.HospitalRequest;
 import com.rehund.healthcare.model.hospital.HospitalResponse;
-import com.rehund.healthcare.repository.hospital.HospitalRepository;
+import com.rehund.healthcare.repository.hospitaldoctor.HospitalRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
