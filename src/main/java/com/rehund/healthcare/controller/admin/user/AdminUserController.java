@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
+@RestController()
 @RequestMapping("/admin/users")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "Bearer")
 @PreAuthorize("hasRole('SUPER_ADMIN')")
-public class UserController {
+public class AdminUserController {
     private final UserService userService;
 
     @PostMapping("/grant")

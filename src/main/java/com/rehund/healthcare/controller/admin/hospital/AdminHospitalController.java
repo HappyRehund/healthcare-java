@@ -11,12 +11,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-@RestController
+@RestController()
 @RequestMapping("/admin/hospitals")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "Bearer")
 @PreAuthorize("hasRole('SUPER_ADMIN')")
-public class HospitalController {
+public class AdminHospitalController {
 
     private final HospitalService hospitalService;
 
