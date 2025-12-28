@@ -19,6 +19,8 @@ import com.rehund.healthcare.service.user.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -145,8 +147,9 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
-    public List<DoctorResponse> getAll() {
-        return List.of();
+    public Page<DoctorResponse> getAll(String keyword, Pageable pageable) {
+        return doctorRepository.searchDoctors(keyword, pageable)
+                .map(doctor -> get(doctor.getDoctorId()));
     }
 
     @Override
