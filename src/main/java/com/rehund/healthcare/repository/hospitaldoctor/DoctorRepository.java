@@ -19,7 +19,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     Optional<Doctor> findByUserId(Long userId);
 
     @Query(value = """
-        SELECT * FROM doctors d
+        SELECT * FROM doctors
         WHERE LOWER(name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
         OR LOWER(bio) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
         """, nativeQuery = true

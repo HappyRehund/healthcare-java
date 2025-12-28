@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.rehund.healthcare.common.constant.AppointmentStatus;
+import com.rehund.healthcare.model.payment.PaymentResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -39,4 +40,6 @@ public class AppointmentResponse {
     private LocalTime endTime;
 
     private AppointmentStatus status;
+
+    private PaymentResponse paymentDetail;
 }

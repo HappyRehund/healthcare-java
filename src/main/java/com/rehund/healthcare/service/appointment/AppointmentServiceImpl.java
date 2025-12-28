@@ -13,12 +13,14 @@ import com.rehund.healthcare.entity.user.User;
 import com.rehund.healthcare.model.appointment.AppointmentBookRequest;
 import com.rehund.healthcare.model.appointment.AppointmentRescheduleRequest;
 import com.rehund.healthcare.model.appointment.AppointmentResponse;
+import com.rehund.healthcare.model.payment.PaymentResponse;
 import com.rehund.healthcare.repository.appointment.AppointmentRepository;
 import com.rehund.healthcare.repository.hospitaldoctor.DoctorAvailabilityRepository;
 import com.rehund.healthcare.repository.hospitaldoctor.DoctorRepository;
 import com.rehund.healthcare.repository.hospitaldoctor.HospitalDoctorFeeRepository;
 import com.rehund.healthcare.repository.hospitaldoctor.HospitalRepository;
 import com.rehund.healthcare.repository.user.UserRepository;
+import com.rehund.healthcare.service.payment.PaymentService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,11 +35,13 @@ import java.util.List;
 public class AppointmentServiceImpl implements AppointmentService {
 
     private final UserRepository userRepository;
-private final AppointmentRepository appointmentRepository;
+    private final AppointmentRepository appointmentRepository;
     private final DoctorRepository doctorRepository;
     private final HospitalDoctorFeeRepository hospitalDoctorFeeRepository;
     private final DoctorAvailabilityRepository doctorAvailabilityRepository;
     private final HospitalRepository hospitalRepository;
+
+    private final PaymentService paymentService;
 
     @Override
     @Transactional
@@ -95,6 +99,8 @@ private final AppointmentRepository appointmentRepository;
 
         appointmentRepository.save(bookedAppointment);
 
+        PaymentResponse paymentResponse = paymentService.createPayment(bookedAppointment);
+
         return AppointmentResponse
                 .builder()
                 .appointmentId(bookedAppointment.getAppointmentId())
@@ -109,6 +115,7 @@ private final AppointmentRepository appointmentRepository;
                 .startTime(bookedAppointment.getStartTime())
                 .endTime(bookedAppointment.getEndTime())
                 .status(bookedAppointment.getStatus())
+                .paymentDetail(paymentResponse)
                 .build();
     }
 
@@ -188,6 +195,15 @@ private final AppointmentRepository appointmentRepository;
     @Override
     public List<AppointmentResponse> listUserAppointments(Long userId) {
         List<Appointment> appointmentList = appointmentRepository.findByPatientIdOrderByAppointmentDateDescStartTimeDesc(userId);
+
+        // untuk mengatasi N + 1 query problem pada payment detail
+        // appointments => list of appointment id
+        // List<Long> appointmentIds = appointmentList.stream()
+        //         .map(Appointment::getAppointmentId)
+        //         .toList();
+        // paymentRepository.findByAppointmentIdIn(appointmentIds);
+        // convertToAppointmentResponse with payment detail (List<Payment> payments, List<Appointment> appointments)
+
         return appointmentList.stream()
                 .map(this::mapAppointmentToAppointmentResponse)
                 .toList();
@@ -241,6 +257,8 @@ private final AppointmentRepository appointmentRepository;
     }
 
     private AppointmentResponse mapAppointmentToAppointmentResponse(Appointment appointment) {
+
+        PaymentResponse paymentResponse = paymentService.findByAppointmentId(appointment.getAppointmentId());
         return AppointmentResponse
                 .builder()
                 .appointmentId(appointment.getAppointmentId())
@@ -252,6 +270,7 @@ private final AppointmentRepository appointmentRepository;
                 .startTime(appointment.getStartTime())
                 .endTime(appointment.getEndTime())
                 .status(appointment.getStatus())
+                .paymentDetail(paymentResponse)
                 .build();
     }
 }
