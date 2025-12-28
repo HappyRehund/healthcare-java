@@ -1,4 +1,4 @@
-package com.rehund.healthcare.model.hospital;
+package com.rehund.healthcare.model.hospitaldoctor;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;

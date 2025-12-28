@@ -1,9 +1,9 @@
-package com.rehund.healthcare.service.hospital;
+package com.rehund.healthcare.service.hospitaldoctor;
 
 import com.rehund.healthcare.common.exception.ResourceNotFoundException;
 import com.rehund.healthcare.entity.hospitaldoctor.Hospital;
-import com.rehund.healthcare.model.hospital.HospitalRequest;
-import com.rehund.healthcare.model.hospital.HospitalResponse;
+import com.rehund.healthcare.model.hospitaldoctor.HospitalRequest;
+import com.rehund.healthcare.model.hospitaldoctor.HospitalResponse;
 import com.rehund.healthcare.repository.hospitaldoctor.HospitalRepository;
 import com.rehund.healthcare.service.cache.CacheService;
 import jakarta.transaction.Transactional;
@@ -44,13 +44,13 @@ public class HospitalServiceImpl implements HospitalService {
     @Override
     public Page<HospitalResponse> search(String keyword, Pageable pageable) {
         return hospitalRepository.findByNameContainingIgnoreCase(keyword, pageable)
-                .map(this::mapHospitalToResponse);
+                .map(this::mapHospitalToHospitalResponse);
     }
 
     @Override
     public HospitalResponse get(Long id) {
         Hospital hospital = getHospitalById(id);
-        return mapHospitalToResponse(hospital);
+        return mapHospitalToHospitalResponse(hospital);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class HospitalServiceImpl implements HospitalService {
         updateHospitalFromRequest(hospital, request);
         Hospital savedHospital = hospitalRepository.save(hospital);
 
-        return mapHospitalToResponse(savedHospital);
+        return mapHospitalToHospitalResponse(savedHospital);
     }
 
     @Override
@@ -79,7 +79,7 @@ public class HospitalServiceImpl implements HospitalService {
                 cacheService.evict(key);
             }
         });
-        return mapHospitalToResponse(updatedHospital);
+        return mapHospitalToHospitalResponse(updatedHospital);
     }
 
     @Override
@@ -91,7 +91,7 @@ public class HospitalServiceImpl implements HospitalService {
         cacheService.evict(key);
     }
 
-    private HospitalResponse mapHospitalToResponse(Hospital hospital) {
+    private HospitalResponse mapHospitalToHospitalResponse(Hospital hospital) {
         return HospitalResponse
                 .builder()
                 .hospitalId(hospital.getHospitalId())

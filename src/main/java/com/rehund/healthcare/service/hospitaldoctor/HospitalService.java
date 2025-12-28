@@ -1,7 +1,7 @@
-package com.rehund.healthcare.service.hospital;
+package com.rehund.healthcare.service.hospitaldoctor;
 
-import com.rehund.healthcare.model.hospital.HospitalRequest;
-import com.rehund.healthcare.model.hospital.HospitalResponse;
+import com.rehund.healthcare.model.hospitaldoctor.HospitalRequest;
+import com.rehund.healthcare.model.hospitaldoctor.HospitalResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

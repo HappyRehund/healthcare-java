@@ -1,7 +1,7 @@
 package com.rehund.healthcare.controller.nonadmin.hospital;
 
-import com.rehund.healthcare.model.hospital.HospitalResponse;
-import com.rehund.healthcare.service.hospital.HospitalService;
+import com.rehund.healthcare.model.hospitaldoctor.HospitalResponse;
+import com.rehund.healthcare.service.hospitaldoctor.HospitalService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
