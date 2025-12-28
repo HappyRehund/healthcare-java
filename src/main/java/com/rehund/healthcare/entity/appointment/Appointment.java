@@ -52,7 +52,7 @@ public class Appointment {
 
     @Column(nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
-    private AppointmentStatus appointmentStatus;
+    private AppointmentStatus status;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

@@ -48,7 +48,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             @Param("doctorId") Long doctorId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
-    )
+    );
 
     List<Appointment> findByPatientIdOrderByAppointmentDateDescStartTimeDesc(Long patientId);
     List<Appointment> findByDoctorIdAndAppointmentDateOrderByStartTimeAsc(Long doctorId, LocalDate appointmentDate);

@@ -3,6 +3,7 @@ package com.rehund.healthcare.middleware;
 import com.rehund.healthcare.common.exception.BadRequestException;
 import com.rehund.healthcare.common.exception.ForbiddenAccessException;
 import com.rehund.healthcare.common.exception.ResourceNotFoundException;
+import com.rehund.healthcare.common.exception.appointment.AppointmentConflictException;
 import com.rehund.healthcare.common.exception.user.*;
 import com.rehund.healthcare.model.error.ErrorResponse;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -78,7 +79,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({
             EmailConflictException.class,
-            UsernameConflictException.class
+            UsernameConflictException.class,
+            AppointmentConflictException.class
     })
     @ResponseStatus(HttpStatus.CONFLICT)
     public @ResponseBody ErrorResponse handleConflictException(
