@@ -1,5 +1,6 @@
 package com.rehund.healthcare.controller.admin.hospitaldoctor;
 
+import com.rehund.healthcare.entity.hospitaldoctor.Doctor;
 import com.rehund.healthcare.model.hospitaldoctor.DoctorAvailabilityRequest;
 import com.rehund.healthcare.model.hospitaldoctor.DoctorRegistrationRequest;
 import com.rehund.healthcare.model.hospitaldoctor.DoctorResponse;
@@ -41,24 +42,4 @@ public class AdminDoctorController {
         DoctorResponse response = doctorService.addDoctorSpecializations(doctorId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-
-    @PreAuthorize("hasRole('DOCTOR')")
-    @PostMapping("/{doctorId}/availabilities")
-    public ResponseEntity<DoctorResponse> updateDoctorAvailability(
-            @PathVariable Long doctorId,
-            @Valid @RequestBody DoctorAvailabilityRequest request
-    )
-    {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserInfo userInfo = (UserInfo) authentication.getPrincipal();
-
-        DoctorResponse existingDoctor = doctorService.getDoctorByUserId(userInfo.getUserId());
-        if(!existingDoctor.getDoctorId().equals(doctorId)){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
-        DoctorResponse response = doctorService.updateDoctorAvailability(doctorId, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
 }

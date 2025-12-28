@@ -59,6 +59,7 @@ public class DoctorServiceImpl implements DoctorService {
                 () -> doctorRepository.findById(doctorId)
                         .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + doctorId))
         );
+
     }
 
     @Override
@@ -81,7 +82,7 @@ public class DoctorServiceImpl implements DoctorService {
                 GrantUserRoleRequest
                         .builder()
                         .userId(user.getUserId())
-                        .roleType(RoleType.DOCTOR)
+                        .roleType(doctorRole.getRoleName())
                         .build()
         );
 
@@ -127,6 +128,7 @@ public class DoctorServiceImpl implements DoctorService {
                             .builder()
                             .specializationId(specialization.getSpecializationId())
                             .specializationName(specialization.getName())
+                            .description(specialization.getDescription())
                             .baseFee(doctorSpecialization.getBaseFee())
                             .hospitalFee(hospitalDoctorFee.getFee())
                             .consultationType(hospitalDoctorFee.getConsultationType())
@@ -140,6 +142,7 @@ public class DoctorServiceImpl implements DoctorService {
                 .builder()
                 .doctorId(doctor.getDoctorId())
                 .bio(doctor.getBio())
+                .name(doctor.getName())
                 .userId(user.getUserId())
                 .email(user.getEmail())
                 .hospitalId(hospital.getHospitalId())
@@ -259,20 +262,20 @@ public class DoctorServiceImpl implements DoctorService {
         List<DoctorSpecialization> specializationList = doctorSpecializationRepository.findByDoctorId(doctor.getDoctorId());
 
         List<SpecializationInfo> specializationInfoList = specializationList.stream()
-                .map(specialization -> {
-                    String specializationName = specializationRepository.findById(specialization.getSpecializationId())
-                            .map(Specialization::getName)
-                            .orElse("Unknown Specialization");
+                .map(doctorSpecialization -> {
+                     Specialization specialization = specializationRepository.findById(doctorSpecialization.getSpecializationId())
+                             .orElseThrow(() -> new ResourceNotFoundException("Specialization with Id " + doctorSpecialization.getSpecializationId() + " not found"));
 
                     HospitalDoctorFee hospitalDoctorFee = hospitalDoctorFeeRepository
-                            .findByHospitalIdAndDoctorSpecializationId(hospital.getHospitalId(), specialization.getDoctorSpecializationId())
-                            .orElseThrow(() -> new ResourceNotFoundException("HospitalDoctorFee not found for hospital Id " + hospital.getHospitalId() + " and specialization Id " + specialization.getDoctorSpecializationId()));
+                            .findByHospitalIdAndDoctorSpecializationId(hospital.getHospitalId(), doctorSpecialization.getDoctorSpecializationId())
+                            .orElseThrow(() -> new ResourceNotFoundException("HospitalDoctorFee not found for hospital Id " + hospital.getHospitalId() + " and specialization Id " + doctorSpecialization.getDoctorSpecializationId()));
 
                     return SpecializationInfo
                             .builder()
-                            .specializationId(specialization.getSpecializationId())
-                            .specializationName(specializationName)
-                            .baseFee(specialization.getBaseFee())
+                            .specializationId(doctorSpecialization.getSpecializationId())
+                            .specializationName(specialization.getName())
+                            .description(specialization.getDescription())
+                            .baseFee(doctorSpecialization.getBaseFee())
                             .hospitalFee(hospitalDoctorFee.getFee())
                             .consultationType(hospitalDoctorFee.getConsultationType())
                             .build();
@@ -292,6 +295,7 @@ public class DoctorServiceImpl implements DoctorService {
         return DoctorResponse
                 .builder()
                 .doctorId(doctor.getDoctorId())
+                .name(doctor.getName())
                 .bio(doctor.getBio())
                 .userId(user.getUserId())
                 .email(user.getEmail())
