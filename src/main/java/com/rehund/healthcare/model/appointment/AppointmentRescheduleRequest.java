@@ -3,7 +3,7 @@ package com.rehund.healthcare.model.appointment;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.rehund.healthcare.common.constant.AppointmentStatus;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,26 +17,14 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class AppointmentResponse {
-    private Long appointmentId;
+public class AppointmentRescheduleRequest {
 
-    private Long patientId;
-    private String patientName;
-
-    private Long doctorId;
-    private String doctorName;
-
-    private Long doctorSpecializationId;
-
-    private Long hospitalId;
-    private String hospitalName;
-
-    private String consultationType;
-
+    @NotNull
     private LocalDate appointmentDate;
-    private LocalTime startTime;
-    private LocalTime endTime;
 
-    private AppointmentStatus status;
+    @NotNull
+    private LocalTime startTime;
+
+    @NotNull
+    private LocalTime endTime;
 }

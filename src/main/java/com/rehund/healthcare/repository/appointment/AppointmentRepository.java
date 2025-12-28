@@ -9,9 +9,20 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
+
+    @Query(
+            value = """
+            SELECT * FROM appointments
+            WHERE appointment_id = :appointmentId
+            FOR UPDATE
+            """,
+            nativeQuery = true
+    )
+    Optional<Appointment> findByIdAndLock(@Param("appointmentId") Long appointmentId);
 
     // untuk cek jadwal bentrok pada saat pembuatan atau pembaruan janji temu (Locking untuk konsistensi data)
     @Query(
