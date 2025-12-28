@@ -2,7 +2,6 @@ package com.rehund.healthcare.model.hospitaldoctor;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.rehund.healthcare.entity.hospitaldoctor.Specialization;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,7 +25,7 @@ public class DoctorResponse {
     private String hospitalName;
 
     private List<SpecializationInfo> specializations;
-    private List<AvailabilityInfo> availabilities;
+    private List<DoctorAvailabilityInfo> doctorAvailabilities;
 
 
 }

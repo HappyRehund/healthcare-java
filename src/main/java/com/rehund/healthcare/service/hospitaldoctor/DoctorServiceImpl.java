@@ -1,15 +1,13 @@
 package com.rehund.healthcare.service.hospitaldoctor;
 
 import com.rehund.healthcare.common.constant.RoleType;
+import com.rehund.healthcare.common.exception.ForbiddenAccessException;
 import com.rehund.healthcare.common.exception.ResourceNotFoundException;
 import com.rehund.healthcare.common.exception.user.UserNotFoundException;
 import com.rehund.healthcare.entity.hospitaldoctor.*;
 import com.rehund.healthcare.entity.user.Role;
 import com.rehund.healthcare.entity.user.User;
-import com.rehund.healthcare.model.hospitaldoctor.DoctorRegistrationRequest;
-import com.rehund.healthcare.model.hospitaldoctor.DoctorResponse;
-import com.rehund.healthcare.model.hospitaldoctor.DoctorSpecializationRequest;
-import com.rehund.healthcare.model.hospitaldoctor.SpecializationInfo;
+import com.rehund.healthcare.model.hospitaldoctor.*;
 import com.rehund.healthcare.model.user.GrantUserRoleRequest;
 import com.rehund.healthcare.repository.hospitaldoctor.*;
 import com.rehund.healthcare.repository.user.RoleRepository;
@@ -25,11 +23,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import java.math.BigDecimal;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +42,7 @@ public class DoctorServiceImpl implements DoctorService {
     private final SpecializationRepository specializationRepository;
     private final DoctorSpecializationRepository doctorSpecializationRepository;
     private final HospitalDoctorFeeRepository hospitalDoctorFeeRepository;
+    private final DoctorAvailabilityRepository doctorAvailabilityRepository;
 
     private final CacheService cacheService;
 
@@ -147,7 +145,7 @@ public class DoctorServiceImpl implements DoctorService {
                 .hospitalId(hospital.getHospitalId())
                 .hospitalName(hospital.getName())
                 .specializations(specializationInfoList)
-                .availabilities(new ArrayList<>()) // nanti diisi, ketika di-register masih kosong
+                .doctorAvailabilities(new ArrayList<>()) // nanti diisi, ketika di-register masih kosong
                 .build();
     }
 
@@ -170,9 +168,6 @@ public class DoctorServiceImpl implements DoctorService {
             DoctorSpecializationRequest request
     )
     {
-
-        String key = DOCTOR_CACHE_KEY + doctorId;
-
         Doctor doctor = getDoctorById(doctorId);
 
         specializationRepository.findById(request.getSpecializationId())
@@ -196,6 +191,27 @@ public class DoctorServiceImpl implements DoctorService {
                 .build();
 
         hospitalDoctorFeeRepository.save(hospitalDoctorFee);
+        return mapDoctorToDoctorResponse(doctor);
+    }
+
+    @Override
+    @Transactional
+    public DoctorResponse updateDoctorAvailability(Long doctorId, DoctorAvailabilityRequest request) {
+        String key = DOCTOR_CACHE_KEY + doctorId;
+        // find the doctor
+        Doctor doctor = getDoctorById(doctorId);
+
+        DoctorAvailability doctorAvailability = DoctorAvailability
+                .builder()
+                .doctorId(doctor.getDoctorId())
+                .date(request.getDate())
+                .startTime(request.getStartTime())
+                .endTime(request.getEndTime())
+                .consultationType(request.getConsultationType())
+                .is_available(true)
+                .build();
+
+        doctorAvailabilityRepository.save(doctorAvailability);
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
@@ -205,6 +221,31 @@ public class DoctorServiceImpl implements DoctorService {
         });
 
         return mapDoctorToDoctorResponse(doctor);
+    }
+
+    @Override
+    public void deleteDoctorAvailability(Long doctorId, Long doctorAvailabilityId) {
+        Doctor doctor = getDoctorById(doctorId);
+
+        DoctorAvailability doctorAvailability = doctorAvailabilityRepository.findById(doctorAvailabilityId)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor Availability with Id " + doctorAvailabilityId + " not found"));
+
+        if (!doctorAvailability.getDoctorId().equals(doctor.getDoctorId())){
+            throw new ForbiddenAccessException("Doctor Availability with Id " + doctorAvailabilityId + " does not belong to Doctor with Id " + doctorId);
+        }
+
+        doctorAvailabilityRepository.deleteById(doctorAvailabilityId);
+    }
+
+    @Override
+    public List<DoctorAvailability> getDoctorAvailabilitiesFromToday(Long doctorId) {
+        return doctorAvailabilityRepository.findDoctorAvailabilitiesByDoctorIdFromToday(doctorId);
+    }
+
+    @Override
+    public Doctor getDoctorByUserId(Long userId) {
+        return doctorRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor with User Id " + userId + " not found"));
     }
 
     private DoctorResponse mapDoctorToDoctorResponse(Doctor doctor){
@@ -237,6 +278,17 @@ public class DoctorServiceImpl implements DoctorService {
                             .build();
                 }).toList();
 
+        List<DoctorAvailabilityInfo> doctorAvailabilityInfoList = getDoctorAvailabilitiesFromToday(doctor.getDoctorId())
+                .stream()
+                .map(doctorAvailability -> DoctorAvailabilityInfo
+                        .builder()
+                        .isAvailable(true)
+                        .startDateTime(LocalDateTime.of(doctorAvailability.getDate(), doctorAvailability.getStartTime()))
+                        .endDateTime(LocalDateTime.of(doctorAvailability.getDate(), doctorAvailability.getEndTime()))
+                        .consultationType(doctorAvailability.getConsultationType())
+                        .build())
+                .toList();
+
         return DoctorResponse
                 .builder()
                 .doctorId(doctor.getDoctorId())
@@ -246,6 +298,7 @@ public class DoctorServiceImpl implements DoctorService {
                 .hospitalId(hospital.getHospitalId())
                 .hospitalName(hospital.getName())
                 .specializations(specializationInfoList)
+                .doctorAvailabilities(doctorAvailabilityInfoList)
                 .build();
     }
 }

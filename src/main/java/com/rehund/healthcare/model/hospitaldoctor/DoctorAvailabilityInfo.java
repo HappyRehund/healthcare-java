@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 
-public class AvailabilityInfo {
+public class DoctorAvailabilityInfo {
     private Long doctorAvailabilityId;
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
