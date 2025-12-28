@@ -22,7 +22,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +59,7 @@ public class DoctorServiceImpl implements DoctorService {
                 Doctor.class,
                 DOCTOR_CACHE_TTL,
                 () -> doctorRepository.findById(doctorId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Hospital not found with id: " + doctorId))
+                        .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + doctorId))
         );
     }
 
@@ -116,6 +119,7 @@ public class DoctorServiceImpl implements DoctorService {
                     .doctorSpecializationId(doctorSpecialization.getDoctorSpecializationId())
                     .hospitalId(request.getHospitalId())
                     .fee(specializationRequest.getBaseFee()) // bisa diupdate nanti
+                    .consultationType(specializationRequest.getConsultationType())
                     .build();
 
             hospitalDoctorFeeRepository.save(hospitalDoctorFee);
@@ -127,6 +131,7 @@ public class DoctorServiceImpl implements DoctorService {
                             .specializationName(specialization.getName())
                             .baseFee(doctorSpecialization.getBaseFee())
                             .hospitalFee(hospitalDoctorFee.getFee())
+                            .consultationType(hospitalDoctorFee.getConsultationType())
                             .build()
             );
         }
@@ -158,6 +163,50 @@ public class DoctorServiceImpl implements DoctorService {
         return mapDoctorToDoctorResponse(doctor);
     }
 
+    @Override
+    @Transactional
+    public DoctorResponse addDoctorSpecializations(
+            Long doctorId,
+            DoctorSpecializationRequest request
+    )
+    {
+
+        String key = DOCTOR_CACHE_KEY + doctorId;
+
+        Doctor doctor = getDoctorById(doctorId);
+
+        specializationRepository.findById(request.getSpecializationId())
+                .orElseThrow(() -> new ResourceNotFoundException("Specialization with Id " + request.getSpecializationId() + " not found"));
+
+        DoctorSpecialization doctorSpecialization = DoctorSpecialization
+                .builder()
+                .doctorId(doctorId)
+                .specializationId(request.getSpecializationId())
+                .baseFee(request.getBaseFee())
+                .build();
+
+        doctorSpecializationRepository.save(doctorSpecialization);
+
+        HospitalDoctorFee hospitalDoctorFee = HospitalDoctorFee
+                .builder()
+                .hospitalId(doctor.getHospitalId())
+                .doctorSpecializationId(doctorSpecialization.getDoctorSpecializationId())
+                .fee(request.getBaseFee())
+                .consultationType(request.getConsultationType())
+                .build();
+
+        hospitalDoctorFeeRepository.save(hospitalDoctorFee);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                cacheService.evict(key);
+            }
+        });
+
+        return mapDoctorToDoctorResponse(doctor);
+    }
+
     private DoctorResponse mapDoctorToDoctorResponse(Doctor doctor){
 
         User user = userRepository.findById(doctor.getUserId())
@@ -184,6 +233,7 @@ public class DoctorServiceImpl implements DoctorService {
                             .specializationName(specializationName)
                             .baseFee(specialization.getBaseFee())
                             .hospitalFee(hospitalDoctorFee.getFee())
+                            .consultationType(hospitalDoctorFee.getConsultationType())
                             .build();
                 }).toList();
 

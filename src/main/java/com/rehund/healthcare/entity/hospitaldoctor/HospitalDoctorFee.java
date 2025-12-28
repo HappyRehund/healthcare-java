@@ -37,6 +37,9 @@ public class HospitalDoctorFee {
     )
     private BigDecimal fee;
 
+    @Column(name = "consultation_type", nullable = false)
+    private String consultationType;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
