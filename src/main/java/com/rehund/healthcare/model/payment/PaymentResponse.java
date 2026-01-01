@@ -41,6 +41,8 @@ public class PaymentResponse {
                 .paymentMethod(payment.getPaymentMethod())
                 .transactionId(payment.getTransactionId())
                 .paymentStatus(payment.getPaymentStatus())
+                .externalId(payment.getXenditInvoiceId())
+                .externalStatus(payment.getXenditPaymentStatus())
                 .createdAt(payment.getCreatedAt())
                 .build();
 

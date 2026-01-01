@@ -4,6 +4,7 @@ import com.rehund.healthcare.common.exception.BadRequestException;
 import com.rehund.healthcare.common.exception.ForbiddenAccessException;
 import com.rehund.healthcare.common.exception.ResourceNotFoundException;
 import com.rehund.healthcare.common.exception.appointment.AppointmentConflictException;
+import com.rehund.healthcare.common.exception.payment.PaymentException;
 import com.rehund.healthcare.common.exception.user.*;
 import com.rehund.healthcare.model.error.ErrorResponse;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -133,4 +134,16 @@ public class GlobalExceptionHandler {
                 .build();
     }
 
+    @ExceptionHandler(PaymentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public @ResponseBody ErrorResponse handlePaymentException (
+            HttpServletRequest request,
+            PaymentException ex
+    ) {
+        return ErrorResponse.builder()
+                .code(HttpStatus.BAD_REQUEST.value())
+                .message(ex.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
 }

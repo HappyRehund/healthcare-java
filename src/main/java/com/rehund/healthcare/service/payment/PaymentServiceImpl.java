@@ -27,6 +27,8 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final DoctorSpecializationRepository doctorSpecializationRepository;
 
+    private final XenditService xenditService;
+
     @Override
     public PaymentResponse createPayment(Appointment appointment) {
         if (!appointment.getStatus().equals(AppointmentStatus.PENDING)){
@@ -52,7 +54,8 @@ public class PaymentServiceImpl implements PaymentService {
                 .build();
 
         paymentRepository.save(payment);
-        return PaymentResponse.fromPayment(payment);
+
+        return xenditService.createPayment(payment);
     }
 
     @Override
