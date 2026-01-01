@@ -39,7 +39,12 @@ public class AppointmentController {
     public ResponseEntity<AppointmentResponse> bookAppointment(
             @Valid @RequestBody AppointmentBookRequest request
     ) {
-        AppointmentResponse response = appointmentService.bookAppointment(request);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        UserInfo userInfo = (UserInfo) authentication.getPrincipal();
+
+        AppointmentResponse response = appointmentService.bookAppointment(userInfo.getUserId(), request);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

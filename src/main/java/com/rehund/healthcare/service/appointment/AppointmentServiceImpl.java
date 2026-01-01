@@ -45,9 +45,9 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     @Transactional
-    public AppointmentResponse bookAppointment(AppointmentBookRequest request) {
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + request.getUserId()));
+    public AppointmentResponse bookAppointment(Long userId, AppointmentBookRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 
         Doctor doctor = doctorRepository.findById(request.getDoctorId())
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + request.getDoctorId()));
@@ -86,7 +86,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         Appointment bookedAppointment = Appointment
                 .builder()
-                .patientId(request.getUserId())
+                .patientId(userId)
                 .doctorId(request.getDoctorId())
                 .hospitalId(doctor.getHospitalId())
                 .doctorSpecializationId(request.getDoctorSpecializationId())
@@ -128,13 +128,13 @@ public class AppointmentServiceImpl implements AppointmentService {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
-        Doctor doctor = doctorRepository.findByUserId(user.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found for user id: " + user.getUserId()));
-        Hospital hospital = hospitalRepository.findById(doctor.getHospitalId())
-                .orElseThrow(() -> new ResourceNotFoundException("Hospital not found with id: " + doctor.getHospitalId()));
-
         Appointment appointment = appointmentRepository.findByIdAndLock(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with id: " + appointmentId));
+
+        Doctor doctor = doctorRepository.findById(appointment.getDoctorId())
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found for appointment's docter id: " + appointment.getDoctorId()));
+        Hospital hospital = hospitalRepository.findById(appointment.getHospitalId())
+                .orElseThrow(() -> new ResourceNotFoundException("Hospital not found with id: " + doctor.getHospitalId()));
 
         if (!appointment.getPatientId().equals(userId)){
             throw new ForbiddenAccessException("Can't reschedule other's appointment");

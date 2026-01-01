@@ -19,9 +19,6 @@ import java.time.LocalTime;
 public class AppointmentBookRequest {
 
     @NotNull
-    private Long userId;
-
-    @NotNull
     private Long doctorId;
 
     @NotNull

@@ -7,7 +7,7 @@ import com.rehund.healthcare.model.appointment.AppointmentResponse;
 import java.util.List;
 
 public interface AppointmentService {
-    AppointmentResponse bookAppointment(AppointmentBookRequest request);
+    AppointmentResponse bookAppointment(Long userId, AppointmentBookRequest request);
 
     AppointmentResponse rescheduleAppointment(Long userId, Long appointmentId, AppointmentRescheduleRequest request);
 
