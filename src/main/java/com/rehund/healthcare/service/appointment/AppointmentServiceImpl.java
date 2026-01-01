@@ -182,6 +182,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         appointmentRepository.save(appointment);
 
+        paymentService.recalculatePayment(appointment);
+
         return mapAppointmentToAppointmentResponse(appointment, user, doctor, hospital);
     }
 
@@ -236,6 +238,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         appointment.setStatus(AppointmentStatus.CANCELLED);
         appointmentRepository.save(appointment);
+
+        paymentService.cancelPaymentForAppointment(appointmentId);
     }
 
     private AppointmentResponse mapAppointmentToAppointmentResponse(Appointment appointment, User user, Doctor doctor, Hospital hospital) {

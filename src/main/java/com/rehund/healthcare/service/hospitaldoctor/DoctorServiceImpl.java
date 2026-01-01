@@ -285,6 +285,7 @@ public class DoctorServiceImpl implements DoctorService {
                 .stream()
                 .map(doctorAvailability -> DoctorAvailabilityInfo
                         .builder()
+                        .doctorAvailabilityId(doctorAvailability.getDoctorAvailabilityId())
                         .isAvailable(true)
                         .startDateTime(LocalDateTime.of(doctorAvailability.getDate(), doctorAvailability.getStartTime()))
                         .endDateTime(LocalDateTime.of(doctorAvailability.getDate(), doctorAvailability.getEndTime()))
