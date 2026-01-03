@@ -31,7 +31,7 @@ public class ApiSecurityConfig {
 
         return httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(registry ->
-                        registry.requestMatchers("/auth/**", "/api-docs/**", "/swagger-ui/**").permitAll()
+                        registry.requestMatchers("/auth/**", "/api-docs/**", "/swagger-ui/**", "/webhook/xendit/**").permitAll()
                                 .anyRequest().authenticated()
                         )
                 .sessionManagement(configurer ->
