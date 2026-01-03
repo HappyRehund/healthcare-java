@@ -24,7 +24,7 @@ const LoginPage = () => {
   const successMessage = location.state?.message;
   const messageType = location.state?.type;
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 
     e.preventDefault();
     setError('');
