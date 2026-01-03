@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { ErrorResponse, RegisterResponse } from "../types/api.types";
+import type { ErrorResponse } from "../types/api.types";
 
 interface RegisterFormData {
   username: string;

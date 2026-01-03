@@ -7,7 +7,6 @@ interface  LoginFormData {
   password: string;
 }
 
-
 const LoginPage = () => {
 
   const navigate = useNavigate();
@@ -27,7 +26,7 @@ const LoginPage = () => {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
