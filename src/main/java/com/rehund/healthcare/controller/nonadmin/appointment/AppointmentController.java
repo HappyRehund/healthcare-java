@@ -35,6 +35,15 @@ public class AppointmentController {
         return ResponseEntity.ok(responses);
     }
 
+    @GetMapping("/{appointmentId}")
+    public ResponseEntity<AppointmentResponse> getUserAppointment(
+            @PathVariable Long appointmentId
+    ){
+        AppointmentResponse response = appointmentService.findById(appointmentId);
+
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/book")
     public ResponseEntity<AppointmentResponse> bookAppointment(
             @Valid @RequestBody AppointmentBookRequest request
