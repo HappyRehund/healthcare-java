@@ -1,6 +1,7 @@
 package com.rehund.healthcare.controller.nonadmin.hospitaldoctor;
 
 import com.rehund.healthcare.entity.hospitaldoctor.Doctor;
+import com.rehund.healthcare.model.PageResponse;
 import com.rehund.healthcare.model.hospitaldoctor.DoctorAvailabilityRequest;
 import com.rehund.healthcare.model.hospitaldoctor.DoctorResponse;
 import com.rehund.healthcare.model.user.UserInfo;
@@ -26,7 +27,7 @@ public class DoctorController {
     private final DoctorService doctorService;
 
     @GetMapping
-    public ResponseEntity<Page<DoctorResponse>> searchDoctors(
+    public ResponseEntity<PageResponse<DoctorResponse>> searchDoctors(
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -39,7 +40,9 @@ public class DoctorController {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
         Page<DoctorResponse> doctorPage = doctorService.getAll(keyword, pageRequest);
-        return ResponseEntity.ok(doctorPage);
+
+        PageResponse<DoctorResponse> pageResponse = PageResponse.fromSpringPage(doctorPage);
+        return ResponseEntity.ok(pageResponse);
     }
 
     @GetMapping("/{id}")
