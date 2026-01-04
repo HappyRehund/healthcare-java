@@ -9,6 +9,8 @@ import com.rehund.healthcare.entity.payment.Payment;
 import com.rehund.healthcare.model.payment.PaymentResponse;
 import com.rehund.healthcare.repository.hospitaldoctor.DoctorSpecializationRepository;
 import com.rehund.healthcare.repository.payment.PaymentRepository;
+import com.xendit.exception.XenditException;
+import com.xendit.model.Invoice;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,7 +63,21 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public PaymentResponse findByAppointmentId(Long appointmentId) {
         return paymentRepository.findByAppointmentId(appointmentId)
-                .map(PaymentResponse::fromPayment)
+                .map(payment -> {
+                    if (payment.getPaymentStatus() == PaymentStatus.PENDING){
+                        try{
+                            Invoice invoice = Invoice.getById(payment.getXenditInvoiceId());
+                            PaymentResponse paymentResponse = PaymentResponse.fromPayment(payment);
+                            paymentResponse.setPaymentUrl(invoice.getInvoiceUrl());
+
+                            return paymentResponse;
+                        } catch (XenditException e) {
+                            throw new ResourceNotFoundException("Xendit Invoice not found for ID: " + payment.getXenditInvoiceId());
+                        }
+                    }
+
+                    return PaymentResponse.fromPayment(payment);
+                })
                 .orElse(null);
     }
 

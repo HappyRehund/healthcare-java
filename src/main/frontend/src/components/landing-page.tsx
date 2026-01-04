@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom"
 import type { UserData } from "../types/local-storage.types";
+import API_CONFIG from "../config/api.config";
+import { type DoctorInfo, type ErrorResponse, type GetDoctorsResponse } from "../types/api.types";
+import DoctorCard from "./doctor-card";
 
 
 const LandingPage = () => {
@@ -10,20 +13,75 @@ const LandingPage = () => {
 
   const userData: UserData = JSON.parse(localStorage.getItem('userData') || '{}')
 
+  const [doctors, setDoctors] = useState<DoctorInfo[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [pagination, setPagination] = useState({
+    currentPage: 0,
+    totalPages: 0,
+    totalElements: 0,
+    size: 10
+  })
+
   const handleLogout = () => {
     localStorage.removeItem('userData')
     localStorage.removeItem('token')
     navigate('/login')
   };
 
+  const searchDoctors = async (page: number) => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.DOCTORS}?keyword=${searchQuery}&page=${page}&size=${pagination.size}&sortBy=name&sortDir=asc`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': '*/*'
+          }
+        }
+      )
+
+      if (!response.ok){
+              const errorData: ErrorResponse = await response.json();
+              throw new Error(errorData.message);
+      }
+
+      const data: GetDoctorsResponse = await response.json();
+      setDoctors(data.content)
+      setPagination({
+        currentPage: data.current_page,
+        totalPages: data.total_pages,
+        totalElements: data.total_elements,
+        size: data.page_size
+      })
+
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("failed to login")
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    searchDoctors(0);
+  }
 
-    console.log('Searching for', searchQuery)
+  const handlePageChange = (newPage: number) => {
+    searchDoctors(newPage);
   }
 
   return (
-    <div className="min-h-screen bg-gray-500">
+    <div className="min-h-screen bg-gray-100">
       {/* Nav bar */}
       <nav className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -68,6 +126,71 @@ const LandingPage = () => {
         </div>
       </div>
 
+      {/* result section */}
+      <div className="mt-8">
+        {
+          loading && (
+            <div className="text-center py-4">
+              <div className="text-gray-600">Loading...</div>
+            </div>
+          )
+        }
+
+        {
+          error && (
+            <div className="text-center py-4">
+              <div className="text-red-600">An Error Occured: {error}</div>
+            </div>
+          )
+        }
+
+        {
+          !loading && !error && doctors.length === 0 && searchQuery && (
+            <div className="text-center py-4">
+              <div className="text-gray-600">Not Doctors Found</div>
+            </div>
+          )
+        }
+
+        {
+          !loading && !error && doctors.length > 0 && (
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {
+                  doctors.map((doctor) => (
+                    <DoctorCard key={doctor.doctor_id} doctor={doctor} />
+                  ))
+                }
+              </div>
+
+              {/* Pagination */}
+
+              {pagination.totalPages > 1 && (
+                <div className="flex justify-center space-x-2 mt-6">
+                  <button
+                    onClick={() => handlePageChange(pagination.currentPage - 1)}
+                    disabled={pagination.currentPage === 0}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  <span className="px-4 py-2 text-sm text-gray-700">
+                    Page {pagination.currentPage + 1} of {pagination.totalPages}
+                  </span>
+
+                  <button
+                    onClick={() => handlePageChange(pagination.currentPage + 1)}
+                    disabled={pagination.currentPage === pagination.totalPages - 1}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </div>
+          )
+        }
+      </div>
     </div>
   )
 
