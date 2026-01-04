@@ -26,6 +26,4 @@ public class DoctorResponse {
 
     private List<SpecializationInfo> specializations;
     private List<DoctorAvailabilityInfo> doctorAvailabilities;
-
-
 }

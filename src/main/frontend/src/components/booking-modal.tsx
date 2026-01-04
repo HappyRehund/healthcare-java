@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import type { BookAppointmentResponse, DoctorInfo, ErrorResponse } from "../types/api.types"
+import type { AppointmentResponse, DoctorResponse, ErrorResponse } from "../types/api.types"
 import { useState, type ChangeEvent } from "react";
 import API_CONFIG from "../config/api.config";
 import type { UserData } from "../types/local-storage.types";
@@ -7,7 +7,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 interface BookingModalProps {
-  doctor: DoctorInfo;
+  doctor: DoctorResponse;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -70,7 +70,7 @@ const BookingModal = ({doctor, isOpen, onClose}: BookingModalProps) => {
         throw new Error(errorData.message);
       }
 
-      const data: BookAppointmentResponse = await response.json();
+      const data: AppointmentResponse = await response.json();
 
       navigate(`/appointments/${data.appointment_id}`, {
         state: {appointmentData: data}

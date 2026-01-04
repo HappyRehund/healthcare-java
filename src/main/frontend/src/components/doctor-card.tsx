@@ -1,11 +1,17 @@
-import type { DoctorInfo } from "../types/api.types"
+import { useState } from "react";
+import type { DoctorResponse } from "../types/api.types"
 import { formatToIDR } from "../utils/currency.utils"
+import BookingModal from "./booking-modal";
 
 interface DoctorProps {
-  doctor: DoctorInfo
+  doctor: DoctorResponse
 }
 
 const DoctorCard = ({doctor} : DoctorProps) => {
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
       <div className="space-y-4">
@@ -43,11 +49,17 @@ const DoctorCard = ({doctor} : DoctorProps) => {
 
         <button
           className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          onClick={() => {}}
+          onClick={() => {setIsModalOpen(true)}}
         >
           Book Appointment
         </button>
       </div>
+
+      <BookingModal
+        doctor={doctor}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   )
 }

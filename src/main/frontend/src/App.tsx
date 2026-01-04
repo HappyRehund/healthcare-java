@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-d
 import LoginPage from "./components/login-page";
 import LandingPage from "./components/landing-page";
 import RegisterPage from "./components/register-page";
+import AppointmentDetail from "./components/appointment-detail";
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -28,6 +29,14 @@ function App() {
           element={
             <ProtectedRoute>
               <LandingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/appointments/:id"
+          element={
+            <ProtectedRoute>
+              <AppointmentDetail />
             </ProtectedRoute>
           }
         />

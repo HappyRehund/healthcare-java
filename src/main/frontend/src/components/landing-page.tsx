@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom"
 import type { UserData } from "../types/local-storage.types";
 import API_CONFIG from "../config/api.config";
-import { type DoctorInfo, type ErrorResponse, type GetDoctorsResponse } from "../types/api.types";
+import { type DoctorResponse, type ErrorResponse, type GetDoctorsResponse } from "../types/api.types";
 import DoctorCard from "./doctor-card";
 
 
@@ -13,7 +13,7 @@ const LandingPage = () => {
 
   const userData: UserData = JSON.parse(localStorage.getItem('userData') || '{}')
 
-  const [doctors, setDoctors] = useState<DoctorInfo[]>([])
+  const [doctors, setDoctors] = useState<DoctorResponse[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pagination, setPagination] = useState({

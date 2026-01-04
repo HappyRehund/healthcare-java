@@ -4,7 +4,8 @@ const API_CONFIG = {
     LOGIN: '/api/v1/auth/login',
     REGISTER: '/api/v1/auth/register',
     DOCTORS: '/api/v1/doctors',
-    APPOINTMENTS: '/api/v1/appointments'
+    APPOINTMENTS: '/api/v1/appointments',
+    USERS: '/api/v1/users'
   }
 } as const;
 

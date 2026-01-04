@@ -1,16 +1,27 @@
+export type RoleType = 'PATIENT' | 'DOCTOR' | 'HOSPITAL_ADMIN' | 'SUPER_ADMIN';
+
+
 export interface LoginResponse {
   token: string;
   user_id: number;
   username: string;
   email: string;
-  roles: string[]
+  roles: RoleType[]
+}
+
+export interface UserResponse {
+  user_id: number;
+  username: string;
+  email: string;
+  enabled: boolean;
+  roles: RoleType[];
 }
 
 export interface RegisterResponse {
   user_id: number;
   username: string;
   email: string;
-  roles: string[];
+  roles: RoleType[];
   enabled: boolean;
 }
 
@@ -31,7 +42,7 @@ interface DoctorAvailability {
   available: boolean;
 }
 
-export interface DoctorInfo {
+export interface DoctorResponse {
   doctor_id: number;
   user_id: number;
   bio: string;
@@ -44,14 +55,14 @@ export interface DoctorInfo {
 }
 
 export interface GetDoctorsResponse {
-  content: DoctorInfo[];
+  content: DoctorResponse[];
   total_elements: number;
   total_pages: number;
   current_page: number;
   page_size: number;
 }
 
-export interface PaymentDetail {
+export interface PaymentResponse {
   payment_id: number;
   appointment_id: number;
   amount: number;
@@ -59,12 +70,12 @@ export interface PaymentDetail {
   transaction_id: string;
   payment_status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
   created_at: string;
-  external_id: string;
-  external_status: string;
+  external_id?: string;
+  external_status?: string;
   payment_url?: string;
 }
 
-export interface BookAppointmentResponse {
+export interface AppointmentResponse {
   appointment_id: number;
   patient_id: number;
   patient_name: string;
@@ -78,7 +89,7 @@ export interface BookAppointmentResponse {
   start_time: string;
   end_time: string;
   status: 'PENDING' | 'SCHEDULED' | 'CANCELLED' | 'COMPLETED' | 'NO_SHOW';
-  payment_detail: PaymentDetail;
+  payment_detail: PaymentResponse;
 }
 
 export interface ErrorResponse {
