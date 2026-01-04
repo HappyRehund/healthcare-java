@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation, useNavigate} from "react-router-dom";
 import type { ErrorResponse, LoginResponse } from "../types/api.types";
+import API_CONFIG from "../config/api.config";
 
 interface  LoginFormData {
   username: string;
@@ -30,7 +31,7 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8080/api/v1/auth/login', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.LOGIN}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
