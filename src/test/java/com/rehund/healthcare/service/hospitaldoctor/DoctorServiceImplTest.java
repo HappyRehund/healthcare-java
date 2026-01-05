@@ -11,7 +11,6 @@ import com.rehund.healthcare.model.user.GrantUserRoleRequest;
 import com.rehund.healthcare.repository.hospitaldoctor.*;
 import com.rehund.healthcare.repository.user.RoleRepository;
 import com.rehund.healthcare.repository.user.UserRepository;
-import com.rehund.healthcare.service.cache.CacheService;
 import com.rehund.healthcare.service.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,12 +18,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.cglib.core.Local;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -51,11 +48,6 @@ class DoctorServiceImplTest {
     private DoctorSpecializationRepository doctorSpecializationRepository;
     @Mock
     private HospitalDoctorFeeRepository hospitalDoctorFeeRepository;
-    @Mock
-    private DoctorAvailabilityRepository doctorAvailabilityRepository;
-
-    @Mock
-    private CacheService cacheService;
 
     @InjectMocks
     private DoctorServiceImpl doctorService;
@@ -85,7 +77,8 @@ class DoctorServiceImplTest {
 
         DoctorSpecializationRequest specializationRequest = new DoctorSpecializationRequest();
         specializationRequest.setSpecializationId(1L);
-        specializationRequest.setBaseFee(new BigDecimal("100.00"));
+        specializationRequest.setFee(new BigDecimal("100.00"));  // Changed from setBaseFee
+        specializationRequest.setConsultationType("OFFLINE");    // Added - required field
         request.setSpecializations(Collections.singletonList(specializationRequest));
 
         user = new User();
@@ -118,7 +111,7 @@ class DoctorServiceImplTest {
                 .builder()
                 .doctorId(doctor.getDoctorId())
                 .specializationId(specialization.getSpecializationId())
-                .baseFee(BigDecimal.valueOf(100.00))
+                // Removed .baseFee() - no longer exists
                 .build();
     }
 
@@ -150,7 +143,7 @@ class DoctorServiceImplTest {
         assertEquals("Test Hospital", response.getHospitalName());
         assertEquals("Doctor's bio", response.getBio());
 
-        assertEquals(new BigDecimal("100.00"), response.getSpecializations().getFirst().getBaseFee());
+        assertEquals(new BigDecimal("100.00"), response.getSpecializations().getFirst().getFee());  // Changed from getBaseFee
         assertEquals(1, response.getSpecializations().size());
 
         verify(userService).grantUserRole(grantRoleRequest);
@@ -159,7 +152,4 @@ class DoctorServiceImplTest {
         verify(doctorSpecializationRepository).save(any(DoctorSpecialization.class));
         verify(hospitalDoctorFeeRepository).save(any(HospitalDoctorFee.class));
     }
-
-
-
 }
