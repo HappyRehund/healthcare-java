@@ -4,11 +4,9 @@ import com.rehund.healthcare.common.constant.AppointmentStatus;
 import com.rehund.healthcare.common.constant.PaymentStatus;
 import com.rehund.healthcare.common.exception.ResourceNotFoundException;
 import com.rehund.healthcare.entity.appointment.Appointment;
-import com.rehund.healthcare.entity.hospitaldoctor.DoctorSpecialization;
 import com.rehund.healthcare.entity.hospitaldoctor.HospitalDoctorFee;
 import com.rehund.healthcare.entity.payment.Payment;
 import com.rehund.healthcare.model.payment.PaymentResponse;
-import com.rehund.healthcare.repository.hospitaldoctor.DoctorSpecializationRepository;
 import com.rehund.healthcare.repository.hospitaldoctor.HospitalDoctorFeeRepository;
 import com.rehund.healthcare.repository.payment.PaymentRepository;
 import com.xendit.exception.XenditException;
@@ -29,7 +27,6 @@ import java.util.UUID;
 public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
-    private final DoctorSpecializationRepository doctorSpecializationRepository;
     private final HospitalDoctorFeeRepository hospitalDoctorFeeRepository;
 
     private final XenditService xenditService;

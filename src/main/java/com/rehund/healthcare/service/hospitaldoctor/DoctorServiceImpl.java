@@ -182,7 +182,7 @@ public class DoctorServiceImpl implements DoctorService {
         // Check if doctor specialization already exists if not create new
         DoctorSpecialization doctorSpecialization = doctorSpecializationRepository
                 .findByDoctorIdAndSpecializationId(doctor.getDoctorId(), request.getSpecializationId())
-                .orElseGet(() -> {;
+                .orElseGet(() -> {
                     DoctorSpecialization newDoctorSpecialization = DoctorSpecialization
                             .builder()
                             .doctorId(doctor.getDoctorId())

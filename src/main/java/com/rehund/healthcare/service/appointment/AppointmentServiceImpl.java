@@ -132,7 +132,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with id: " + appointmentId));
 
         Doctor doctor = doctorRepository.findById(appointment.getDoctorId())
-                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found for appointment's docter id: " + appointment.getDoctorId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found for appointment's doctor id: " + appointment.getDoctorId()));
         Hospital hospital = hospitalRepository.findById(appointment.getHospitalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Hospital not found with id: " + doctor.getHospitalId()));
 
