@@ -29,8 +29,7 @@ interface DoctorSpecialization {
   specialization_id: number;
   specialization_name: string;
   description: string;
-  base_fee: number;
-  hospital_fee: number;
+  fee: number;
   consultation_type: string;
 }
 

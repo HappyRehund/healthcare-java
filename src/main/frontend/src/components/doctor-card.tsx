@@ -41,7 +41,7 @@ const DoctorCard = ({doctor} : DoctorProps) => {
               doctor.specializations.map((spec, index) => (
                 <div key={index} className="flex justify-between items-center text-sm">
                   <span className="text-gray-600">{spec.consultation_type}</span>
-                  <span className="font-medium">{formatToIDR(spec.base_fee)}/hour</span>
+                  <span className="font-medium">{formatToIDR(spec.fee)}/hour</span>
                 </div>
               ))
             }

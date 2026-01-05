@@ -55,12 +55,11 @@ const BookingModal = ({doctor, isOpen, onClose}: BookingModalProps) => {
             'Accept': '*/*'
           },
           body: JSON.stringify({
-            userId: userData?.userId,
-            doctorId: doctor.doctor_id,
-            doctorSpecializationId: parseInt(selectedSpecialization),
-            appointmentDate: selectedDate.toLocaleDateString("en-CA"),
-            startTime: selectedTime,
-            endTime: endTimeString
+            doctor_id: doctor.doctor_id,
+            doctor_specialization_id: parseInt(selectedSpecialization),
+            appointment_date: selectedDate.toLocaleDateString("en-CA"),
+            start_time: selectedTime,
+            end_time: endTimeString
           })
         }
       )
@@ -90,7 +89,7 @@ const BookingModal = ({doctor, isOpen, onClose}: BookingModalProps) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/10 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Book Appointment</h2>
