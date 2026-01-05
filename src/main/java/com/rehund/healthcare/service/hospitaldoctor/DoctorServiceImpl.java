@@ -104,20 +104,24 @@ public class DoctorServiceImpl implements DoctorService {
             Specialization specialization = specializationRepository.findById(specializationRequest.getSpecializationId())
                     .orElseThrow(() -> new ResourceNotFoundException("Specialization with Id " + specializationRequest.getSpecializationId() + " not found"));
 
-            DoctorSpecialization doctorSpecialization = DoctorSpecialization
-                    .builder()
-                    .doctorId(doctor.getDoctorId())
-                    .specializationId(specializationRequest.getSpecializationId())
-                    .baseFee(specializationRequest.getBaseFee())
-                    .build();
+            // check if doctor specialization already exists if not create new
+            DoctorSpecialization doctorSpecialization = doctorSpecializationRepository
+                    .findByDoctorIdAndSpecializationId(doctor.getDoctorId(), specialization.getSpecializationId())
+                            .orElseGet(() -> {
+                                DoctorSpecialization newDoctorSpecialization = DoctorSpecialization
+                                        .builder()
+                                        .doctorId(doctor.getDoctorId())
+                                        .specializationId(specializationRequest.getSpecializationId())
+                                        .build();
 
-            doctorSpecializationRepository.save(doctorSpecialization);
+                                return doctorSpecializationRepository.save(newDoctorSpecialization);
+                            });
 
             HospitalDoctorFee hospitalDoctorFee = HospitalDoctorFee
                     .builder()
-                    .doctorSpecializationId(doctorSpecialization.getDoctorSpecializationId())
                     .hospitalId(request.getHospitalId())
-                    .fee(specializationRequest.getBaseFee()) // bisa diupdate nanti
+                    .doctorSpecializationId(doctorSpecialization.getDoctorSpecializationId())
+                    .fee(specializationRequest.getFee())
                     .consultationType(specializationRequest.getConsultationType())
                     .build();
 
@@ -129,8 +133,7 @@ public class DoctorServiceImpl implements DoctorService {
                             .specializationId(specialization.getSpecializationId())
                             .specializationName(specialization.getName())
                             .description(specialization.getDescription())
-                            .baseFee(doctorSpecialization.getBaseFee())
-                            .hospitalFee(hospitalDoctorFee.getFee())
+                            .fee(hospitalDoctorFee.getFee())
                             .consultationType(hospitalDoctorFee.getConsultationType())
                             .build()
             );
@@ -176,24 +179,38 @@ public class DoctorServiceImpl implements DoctorService {
         specializationRepository.findById(request.getSpecializationId())
                 .orElseThrow(() -> new ResourceNotFoundException("Specialization with Id " + request.getSpecializationId() + " not found"));
 
-        DoctorSpecialization doctorSpecialization = DoctorSpecialization
-                .builder()
-                .doctorId(doctorId)
-                .specializationId(request.getSpecializationId())
-                .baseFee(request.getBaseFee())
-                .build();
+        // Check if doctor specialization already exists if not create new
+        DoctorSpecialization doctorSpecialization = doctorSpecializationRepository
+                .findByDoctorIdAndSpecializationId(doctor.getDoctorId(), request.getSpecializationId())
+                .orElseGet(() -> {;
+                    DoctorSpecialization newDoctorSpecialization = DoctorSpecialization
+                            .builder()
+                            .doctorId(doctor.getDoctorId())
+                            .specializationId(request.getSpecializationId())
+                            .build();
 
-        doctorSpecializationRepository.save(doctorSpecialization);
+                    return doctorSpecializationRepository.save(newDoctorSpecialization);
+                });
+
+        boolean feeExists = hospitalDoctorFeeRepository.existsByHospitalIdAndDoctorSpecializationIdAndConsultationType(
+                doctor.getHospitalId(),
+                doctorSpecialization.getDoctorSpecializationId(),
+                request.getConsultationType()
+        );
+        if (feeExists) {
+            throw new ForbiddenAccessException("Hospital Doctor Fee already exists for hospital Id " + doctor.getHospitalId() + " and specialization Id " + request.getSpecializationId());
+        }
 
         HospitalDoctorFee hospitalDoctorFee = HospitalDoctorFee
                 .builder()
-                .hospitalId(doctor.getHospitalId())
                 .doctorSpecializationId(doctorSpecialization.getDoctorSpecializationId())
-                .fee(request.getBaseFee())
+                .hospitalId(doctor.getHospitalId())
+                .fee(request.getFee()) // bisa diupdate nanti
                 .consultationType(request.getConsultationType())
                 .build();
 
         hospitalDoctorFeeRepository.save(hospitalDoctorFee);
+
         return mapDoctorToDoctorResponse(doctor);
     }
 
@@ -262,23 +279,23 @@ public class DoctorServiceImpl implements DoctorService {
         List<DoctorSpecialization> specializationList = doctorSpecializationRepository.findByDoctorId(doctor.getDoctorId());
 
         List<SpecializationInfo> specializationInfoList = specializationList.stream()
-                .map(doctorSpecialization -> {
+                .flatMap(doctorSpecialization -> {
                      Specialization specialization = specializationRepository.findById(doctorSpecialization.getSpecializationId())
                              .orElseThrow(() -> new ResourceNotFoundException("Specialization with Id " + doctorSpecialization.getSpecializationId() + " not found"));
 
-                    HospitalDoctorFee hospitalDoctorFee = hospitalDoctorFeeRepository
-                            .findByHospitalIdAndDoctorSpecializationId(hospital.getHospitalId(), doctorSpecialization.getDoctorSpecializationId())
-                            .orElseThrow(() -> new ResourceNotFoundException("HospitalDoctorFee not found for hospital Id " + hospital.getHospitalId() + " and specialization Id " + doctorSpecialization.getDoctorSpecializationId()));
+                    List<HospitalDoctorFee> hospitalDoctorFeeList = hospitalDoctorFeeRepository
+                            .findAllByHospitalIdAndDoctorSpecializationId(hospital.getHospitalId(), doctorSpecialization.getDoctorSpecializationId());
 
-                    return SpecializationInfo
-                            .builder()
-                            .specializationId(doctorSpecialization.getSpecializationId())
-                            .specializationName(specialization.getName())
-                            .description(specialization.getDescription())
-                            .baseFee(doctorSpecialization.getBaseFee())
-                            .hospitalFee(hospitalDoctorFee.getFee())
-                            .consultationType(hospitalDoctorFee.getConsultationType())
-                            .build();
+                    return hospitalDoctorFeeList.stream()
+                            .map(fee -> SpecializationInfo
+                                    .builder()
+                                    .specializationId(doctorSpecialization.getSpecializationId())
+                                    .specializationName(specialization.getName())
+                                    .description(specialization.getDescription())
+                                    .fee(fee.getFee())
+                                    .consultationType(fee.getConsultationType())
+                                    .build()
+                            );
                 }).toList();
 
         List<DoctorAvailabilityInfo> doctorAvailabilityInfoList = getDoctorAvailabilitiesFromToday(doctor.getDoctorId())

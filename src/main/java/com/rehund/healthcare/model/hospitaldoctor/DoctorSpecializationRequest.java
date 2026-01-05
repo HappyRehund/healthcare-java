@@ -25,7 +25,7 @@ public class DoctorSpecializationRequest {
 
     @NotNull
     @Positive
-    private BigDecimal baseFee;
+    private BigDecimal fee;
 
     @NotNull
     @Pattern(regexp = "^(ONLINE|OFFLINE)$", message = "consultation type must be either online or offline")

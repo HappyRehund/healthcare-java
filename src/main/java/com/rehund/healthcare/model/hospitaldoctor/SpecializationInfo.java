@@ -19,8 +19,6 @@ public class SpecializationInfo {
     private String specializationName;
     private String description;
 
-    private BigDecimal baseFee;
-    private BigDecimal hospitalFee;
-
+    private BigDecimal fee;
     private String consultationType;
 }

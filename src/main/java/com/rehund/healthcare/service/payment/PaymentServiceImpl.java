@@ -5,9 +5,11 @@ import com.rehund.healthcare.common.constant.PaymentStatus;
 import com.rehund.healthcare.common.exception.ResourceNotFoundException;
 import com.rehund.healthcare.entity.appointment.Appointment;
 import com.rehund.healthcare.entity.hospitaldoctor.DoctorSpecialization;
+import com.rehund.healthcare.entity.hospitaldoctor.HospitalDoctorFee;
 import com.rehund.healthcare.entity.payment.Payment;
 import com.rehund.healthcare.model.payment.PaymentResponse;
 import com.rehund.healthcare.repository.hospitaldoctor.DoctorSpecializationRepository;
+import com.rehund.healthcare.repository.hospitaldoctor.HospitalDoctorFeeRepository;
 import com.rehund.healthcare.repository.payment.PaymentRepository;
 import com.xendit.exception.XenditException;
 import com.xendit.model.Invoice;
@@ -28,6 +30,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final DoctorSpecializationRepository doctorSpecializationRepository;
+    private final HospitalDoctorFeeRepository hospitalDoctorFeeRepository;
 
     private final XenditService xenditService;
 
@@ -37,11 +40,15 @@ public class PaymentServiceImpl implements PaymentService {
             throw new IllegalArgumentException("Payment can only be created for appointments with PENDING status.");
         }
 
-        DoctorSpecialization doctorSpecialization = doctorSpecializationRepository.findById(appointment.getDoctorSpecializationId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid Doctor Specialization ID"));
+        HospitalDoctorFee hospitalDoctorFee = hospitalDoctorFeeRepository
+                .findByHospitalIdAndDoctorSpecializationIdAndConsultationType(
+                        appointment.getHospitalId(),
+                        appointment.getDoctorSpecializationId(),
+                        appointment.getConsultationType()
+                )
+                .orElseThrow(() -> new IllegalArgumentException("No fee configuration found for the given hospital, doctor specialization, and consultation type."));
 
-        BigDecimal hourlyFee = doctorSpecialization.getBaseFee();
-
+        BigDecimal hourlyFee = hospitalDoctorFee.getFee();
         BigDecimal amount = calculateAmount(appointment, hourlyFee);
 
         String transactionId = UUID.randomUUID().toString();
@@ -124,10 +131,15 @@ public class PaymentServiceImpl implements PaymentService {
             throw new IllegalStateException("Payment can only be recalculated if it is in PENDING status.");
         }
 
-        DoctorSpecialization doctorSpecialization = doctorSpecializationRepository.findById(appointment.getDoctorSpecializationId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid Doctor Specialization ID"));
+        HospitalDoctorFee hospitalDoctorFee = hospitalDoctorFeeRepository
+                .findByHospitalIdAndDoctorSpecializationIdAndConsultationType(
+                        appointment.getHospitalId(),
+                        appointment.getDoctorSpecializationId(),
+                        appointment.getConsultationType()
+                )
+                .orElseThrow(() -> new IllegalArgumentException("No fee configuration found for the given hospital, doctor specialization, and consultation type."));
 
-        BigDecimal hourlyFee = doctorSpecialization.getBaseFee();
+        BigDecimal hourlyFee = hospitalDoctorFee.getFee();
         BigDecimal newAmount = calculateAmount(appointment, hourlyFee);
         payment.setAmount(newAmount);
         paymentRepository.save(payment);

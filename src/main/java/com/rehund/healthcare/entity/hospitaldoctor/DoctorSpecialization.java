@@ -30,14 +30,6 @@ public class DoctorSpecialization {
     @Column(name = "specialization_id", nullable = false)
     private Long specializationId;
 
-    @Column(
-            name = "base_fee",
-            nullable = false,
-            precision = 10,
-            scale = 2
-    )
-    private BigDecimal baseFee;
-
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
