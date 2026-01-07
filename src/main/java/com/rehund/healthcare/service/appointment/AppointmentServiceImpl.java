@@ -55,9 +55,9 @@ public class AppointmentServiceImpl implements AppointmentService {
         Hospital hospital = hospitalRepository.findById(doctor.getHospitalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Hospital not found with id: " + doctor.getHospitalId()));
 
-        HospitalDoctorFee fee = hospitalDoctorFeeRepository.findByHospitalIdAndDoctorSpecializationId(
-                doctor.getHospitalId(), request.getDoctorSpecializationId()
-        ).orElseThrow(() -> new ResourceNotFoundException("Fee not found for doctor specialization id: " + request.getDoctorSpecializationId()));
+        HospitalDoctorFee fee = hospitalDoctorFeeRepository.findByHospitalIdAndDoctorSpecializationIdAndConsultationType(
+                doctor.getHospitalId(), request.getDoctorSpecializationId(), request.getConsultationType()
+        ).orElseThrow(() -> new ResourceNotFoundException("Fee not found for doctor specialization id: " + request.getDoctorSpecializationId() + " and consultation type: " + request.getConsultationType()));
 
         // cek availability doctor
         boolean isDoctorAvailable = doctorAvailabilityRepository.isDoctorAvailable(
@@ -111,6 +111,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .hospitalId(hospital.getHospitalId())
                 .hospitalName(hospital.getName())
                 .doctorSpecializationId(bookedAppointment.getDoctorSpecializationId())
+                .consultationType(bookedAppointment.getConsultationType())
                 .appointmentDate(bookedAppointment.getAppointmentDate())
                 .startTime(bookedAppointment.getStartTime())
                 .endTime(bookedAppointment.getEndTime())
@@ -253,6 +254,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .hospitalId(appointment.getHospitalId())
                 .hospitalName(hospital.getName())
                 .doctorSpecializationId(appointment.getDoctorSpecializationId())
+                .consultationType(appointment.getConsultationType())
                 .appointmentDate(appointment.getAppointmentDate())
                 .startTime(appointment.getStartTime())
                 .endTime(appointment.getEndTime())
@@ -270,6 +272,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .doctorId(appointment.getDoctorId())
                 .hospitalId(appointment.getHospitalId())
                 .doctorSpecializationId(appointment.getDoctorSpecializationId())
+                .consultationType(appointment.getConsultationType())
                 .appointmentDate(appointment.getAppointmentDate())
                 .startTime(appointment.getStartTime())
                 .endTime(appointment.getEndTime())

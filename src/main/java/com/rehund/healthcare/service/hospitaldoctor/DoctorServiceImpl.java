@@ -130,6 +130,7 @@ public class DoctorServiceImpl implements DoctorService {
             specializationInfoList.add(
                     SpecializationInfo
                             .builder()
+                            .doctorSpecializationId(doctorSpecialization.getDoctorSpecializationId())
                             .specializationId(specialization.getSpecializationId())
                             .specializationName(specialization.getName())
                             .description(specialization.getDescription())
@@ -289,6 +290,7 @@ public class DoctorServiceImpl implements DoctorService {
                     return hospitalDoctorFeeList.stream()
                             .map(fee -> SpecializationInfo
                                     .builder()
+                                    .doctorSpecializationId(doctorSpecialization.getDoctorSpecializationId())
                                     .specializationId(doctorSpecialization.getSpecializationId())
                                     .specializationName(specialization.getName())
                                     .description(specialization.getDescription())

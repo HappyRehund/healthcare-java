@@ -1,8 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import type { AppointmentResponse, DoctorResponse, ErrorResponse } from "../types/api.types"
-import { useState, type ChangeEvent } from "react";
+import { useState, useMemo, type ChangeEvent } from "react";
 import API_CONFIG from "../config/api.config";
-import type { UserData } from "../types/local-storage.types";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -22,9 +21,64 @@ const BookingModal = ({doctor, isOpen, onClose}: BookingModalProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const timeSlots = [
-    '07:00', '08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'
-  ];
+  // Get the selected specialization details to filter availabilities
+  const selectedSpec = useMemo(() => {
+    return doctor.specializations.find(
+      spec => spec.doctor_specialization_id === parseInt(selectedSpecialization)
+    );
+  }, [selectedSpecialization, doctor.specializations]);
+
+  // Filter availabilities based on selected date and consultation type
+  const availableTimeSlots = useMemo(() => {
+    if (!selectedDate || !selectedSpec) return [];
+
+    const selectedDateStr = selectedDate.toLocaleDateString("en-CA");
+
+    return doctor.doctor_availabilities
+      .filter(availability => {
+        const availabilityDate = availability.start_date_time.split('T')[0];
+        return (
+          availability.available &&
+          availability.consultation_type === selectedSpec.consultation_type &&
+          availabilityDate === selectedDateStr
+        );
+      })
+      .flatMap(availability => {
+
+        const slots: string[] = [];
+        const startHour = parseInt(availability.start_date_time.split('T')[1].split(':')[0]);
+        const endHour = parseInt(availability.end_date_time.split('T')[1].split(':')[0]);
+
+        for (let hour = startHour; hour < endHour; hour++) {
+          slots.push(`${hour.toString().padStart(2, '0')}:00`);
+        }
+        return slots;
+      });
+  }, [selectedDate, selectedSpec, doctor.doctor_availabilities]);
+
+
+  const availableDates = useMemo(() => {
+    if (!selectedSpec) return [];
+
+    return doctor.doctor_availabilities
+      .filter(availability =>
+        availability.available &&
+        availability.consultation_type === selectedSpec.consultation_type
+      )
+      .map(availability => new Date(availability.start_date_time.split('T')[0]));
+  }, [selectedSpec, doctor.doctor_availabilities]);
+
+
+  const handleSpecializationChange = (value: string) => {
+    setSelectedSpecialization(value);
+    setSelectedDate(null);
+    setSelectedTime('');
+  };
+
+  const handleDateChange = (date: Date | null) => {
+    setSelectedDate(date);
+    setSelectedTime('');
+  };
 
   const handleBook = async () => {
 
@@ -40,8 +94,6 @@ const BookingModal = ({doctor, isOpen, onClose}: BookingModalProps) => {
     endTime.setHours(endTime.getHours() + 1);
 
     const endTimeString = `${endTime.getHours().toString().padStart(2, '0')}:00`;
-
-    const userData: UserData | null = JSON.parse(localStorage.getItem('userData') || '{}');
 
     try {
       const token = localStorage.getItem('token');
@@ -59,7 +111,8 @@ const BookingModal = ({doctor, isOpen, onClose}: BookingModalProps) => {
             doctor_specialization_id: parseInt(selectedSpecialization),
             appointment_date: selectedDate.toLocaleDateString("en-CA"),
             start_time: selectedTime,
-            end_time: endTimeString
+            end_time: endTimeString,
+            consultation_type: selectedSpec?.consultation_type
           })
         }
       )
@@ -110,13 +163,13 @@ const BookingModal = ({doctor, isOpen, onClose}: BookingModalProps) => {
 
             <select
               value={selectedSpecialization}
-              onChange={(e: ChangeEvent<HTMLSelectElement>) => setSelectedSpecialization(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLSelectElement>) => handleSpecializationChange(e.target.value)}
               className="w-full border border-gray-300 rounded-md p-2"
             >
               <option value="">Select a specialization</option>
               {
                 doctor.specializations.map((spec) => (
-                  <option key={spec.specialization_id} value={spec.specialization_id}>
+                  <option key={`${spec.doctor_specialization_id}-${spec.consultation_type}`} value={spec.doctor_specialization_id}>
                     {spec.specialization_name} - {spec.consultation_type}
                   </option>
                 ))
@@ -133,11 +186,16 @@ const BookingModal = ({doctor, isOpen, onClose}: BookingModalProps) => {
 
             <DatePicker
               selected={selectedDate}
-              onChange={(date: Date | null) => setSelectedDate(date as Date | null)}
+              onChange={handleDateChange}
               minDate={new Date()}
+              includeDates={availableDates}
               className="w-full border border-gray-300 rounded-md p-2"
-              placeholderText="Select date"
+              placeholderText={selectedSpec ? "Select available date" : "Select specialization first"}
+              disabled={!selectedSpec}
             />
+            {selectedSpec && availableDates.length === 0 && (
+              <p className="text-sm text-orange-500 mt-1">No available dates for this consultation type</p>
+            )}
           </div>
 
           {/* Time Selection */}
@@ -150,9 +208,16 @@ const BookingModal = ({doctor, isOpen, onClose}: BookingModalProps) => {
               value={selectedTime}
               onChange={(e: ChangeEvent<HTMLSelectElement>) => setSelectedTime(e.target.value)}
               className="w-full border border-gray-300 rounded-md p-2"
+              disabled={!selectedDate || availableTimeSlots.length === 0}
             >
-              <option value="">Select Time Slot</option>
-              {timeSlots.map((time) => (
+              <option value="">
+                {!selectedDate
+                  ? "Select date first"
+                  : availableTimeSlots.length === 0
+                    ? "No available time slots"
+                    : "Select Time Slot"}
+              </option>
+              {availableTimeSlots.map((time) => (
                 <option key={time} value={time}>
                   {time}
                 </option>
@@ -166,7 +231,7 @@ const BookingModal = ({doctor, isOpen, onClose}: BookingModalProps) => {
 
           <button
             onClick={handleBook}
-            disabled={loading}
+            disabled={loading || !selectedSpecialization || !selectedDate || !selectedTime}
             className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
           >
             {loading ? 'Booking...' : 'Confirm Booking'}

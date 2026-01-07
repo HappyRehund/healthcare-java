@@ -32,4 +32,7 @@ public class AppointmentBookRequest {
 
     @NotNull
     private LocalTime endTime;
+
+    @NotNull
+    private String consultationType;
 }

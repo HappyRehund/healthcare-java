@@ -26,6 +26,7 @@ export interface RegisterResponse {
 }
 
 interface DoctorSpecialization {
+  doctor_specialization_id: number;
   specialization_id: number;
   specialization_name: string;
   description: string;

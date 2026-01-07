@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class SpecializationInfo {
+    private Long doctorSpecializationId;
     private Long specializationId;
     private String specializationName;
     private String description;
