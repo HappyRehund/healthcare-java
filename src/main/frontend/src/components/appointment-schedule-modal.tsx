@@ -15,6 +15,8 @@ interface AppointmentScheduleModalProps {
   appointmentId?: number;
   initialDate?: string;
   initialTime?: string;
+  initialSpecializationId?: number;
+  initialConsultationType?: string;
 }
 
 const AppointmentScheduleModal = ({
@@ -24,13 +26,19 @@ const AppointmentScheduleModal = ({
   mode = 'booking',
   appointmentId,
   initialDate,
-  initialTime
+  initialTime,
+  initialSpecializationId,
+  initialConsultationType
 }: AppointmentScheduleModalProps
 ) => {
 
   const navigate = useNavigate();
 
-  const [selectedSpecialization, setSelectedSpecialization] = useState('');
+  const [selectedSpecialization, setSelectedSpecialization] = useState(
+    initialSpecializationId && initialConsultationType
+      ? `${initialSpecializationId}-${initialConsultationType}`
+      : ''
+  );
   const [selectedDate, setSelectedDate] = useState<Date | null>(initialDate ? new Date(initialDate): null);
   const [selectedTime, setSelectedTime] = useState(initialTime || '');
   const [loading, setLoading] = useState(false);
@@ -38,9 +46,10 @@ const AppointmentScheduleModal = ({
 
   // Get the selected specialization details to filter availabilities
   const selectedSpec = useMemo(() => {
-    if (!doctor) return undefined;
+    if (!doctor || !selectedSpecialization) return undefined;
+    const [specId, consultationType] = selectedSpecialization.split('-');
     return doctor.specializations.find(
-      spec => spec.doctor_specialization_id === parseInt(selectedSpecialization)
+      spec => spec.doctor_specialization_id === parseInt(specId) && spec.consultation_type === consultationType
     );
   }, [selectedSpecialization, doctor]);
 
@@ -156,7 +165,7 @@ const AppointmentScheduleModal = ({
             },
             body: JSON.stringify({
               doctor_id: doctor?.doctor_id,
-              doctor_specialization_id: parseInt(selectedSpecialization),
+              doctor_specialization_id: parseInt(selectedSpecialization.split('-')[0]),
               appointment_date: selectedDate.toLocaleDateString("en-CA"),
               start_time: selectedTime,
               end_time: endTimeString,
@@ -198,7 +207,7 @@ const AppointmentScheduleModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/10 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">
@@ -232,7 +241,7 @@ const AppointmentScheduleModal = ({
               >
                 <option value="">Select a specialization</option>
                 {doctor?.specializations.map((spec) => (
-                  <option key={`${spec.doctor_specialization_id}-${spec.consultation_type}`} value={spec.doctor_specialization_id}>
+                  <option key={`${spec.doctor_specialization_id}-${spec.consultation_type}`} value={`${spec.doctor_specialization_id}-${spec.consultation_type}`}>
                     {spec.specialization_name} - {spec.consultation_type}
                   </option>
                 ))}

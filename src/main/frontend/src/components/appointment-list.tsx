@@ -1,22 +1,23 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API_CONFIG from "../config/api.config";
-import { type AppointmentResponse, type ErrorResponse } from "../types/api.types";
-import { formatDate, formatTime } from "../utils/date-time.utils";
-import { getAppointmentStatusBadgeClass, getPaymentStatusBadgeClass } from "../utils/status-badge.utils";
-import { formatToIDR } from "../utils/currency.utils";
+import { type AppointmentResponse, type DoctorResponse, type ErrorResponse } from "../types/api.types";
+import { formatTime } from "../utils/date-time.utils";
 import Navbar from "./navbar";
 import AppointmentScheduleModal from "./appointment-schedule-modal";
+import AppointmentCard from "./appointment-card";
 
 const AppointmentList = () => {
 
   const navigate = useNavigate();
   const [appointments, setAppointments] = useState<AppointmentResponse[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<number | null>(null);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentResponse | null>(null);
+  const [selectedDoctor, setSelectedDoctor] = useState<DoctorResponse | null>(null);
+  const [loadingDoctor, setLoadingDoctor] = useState(false);
 
 
   useEffect(() => {
@@ -58,9 +59,40 @@ const AppointmentList = () => {
 
   }, [])
 
-  const handleRescheduleClick = (appointment: AppointmentResponse) => {
+  const handleRescheduleClick = async (appointment: AppointmentResponse) => {
     setSelectedAppointment(appointment);
-    setShowRescheduleModal(true);
+    setLoadingDoctor(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.DOCTORS}/${appointment.doctor_id}`,
+        {
+          method: "GET",
+          headers: {
+            'accept': "*/*",
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!response.ok) {
+        const errorData: ErrorResponse = await response.json();
+        throw new Error(errorData.message);
+      }
+
+      const doctorData: DoctorResponse = await response.json();
+      setSelectedDoctor(doctorData);
+      setShowRescheduleModal(true);
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("Failed to load doctor data");
+      }
+    } finally {
+      setLoadingDoctor(false);
+    }
   }
 
   const handleCancel = async (appointmentId: number) => {
@@ -159,90 +191,33 @@ const AppointmentList = () => {
           ) : (
             <ul className="divide-y divide-gray-200">
               {appointments.map((appointment) => (
-                <li key={appointment.appointment_id} className="p-6 hover:bg-gray-50">
-                  <div className="space-y-4">
-                    {/* Date & Time */}
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="text-lg font-medium text-gray-900">
-                          {formatDate(appointment.appointment_date)}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {formatTime(appointment.start_time)} - {formatTime(appointment.end_time)}
-                        </p>
-                      </div>
-
-                      {appointment.status === 'PENDING' && (
-                        <>
-                          <button
-                            onClick={() => handleRescheduleClick(appointment)}
-                            className="text-yellow-600 hover:text-yellow-900 font-medium text-sm"
-                          >
-                            Reschedule
-                          </button>
-
-                          <button
-                            onClick={() => handleCancel(appointment.appointment_id)}
-                            disabled={cancellingId === appointment.appointment_id}
-                            className="text-red-600 hover:text-red-900 disabled:opacity-50 font-medium text-sm"
-                          >
-                            {cancellingId === appointment.appointment_id ? 'Cancelling...' : 'Cancel'}
-                          </button>
-                        </>
-                      )}
-
-                      <button
-                        onClick={() => navigate(`/appointments/${appointment.appointment_id}`)}
-                        className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
-                      >
-                        View Details
-                      </button>
-                    </div>
-
-                    {/* Status Badges */}
-                    <div className="flex flex-wrap gap-2">
-                      {/* Consultation Type */}
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {appointment.consultation_type}
-                      </span>
-
-                      {/* Appointment Status */}
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getAppointmentStatusBadgeClass(appointment.status)}`}>
-                        {appointment.status}
-                      </span>
-
-                      {/* Payment Status */}
-                      {appointment.payment_detail && (
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPaymentStatusBadgeClass(appointment.payment_detail.payment_status)}`}>
-                          Payment: {appointment.payment_detail.payment_status}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Payment Amount */}
-                    {appointment.payment_detail && (
-                      <div className="text-sm text-gray-500">
-                        Amount: {formatToIDR(appointment.payment_detail.amount)}
-                      </div>
-                    )}
-                  </div>
-                </li>
+                <AppointmentCard
+                  key={appointment.appointment_id}
+                  appointment={appointment}
+                  onReschedule={handleRescheduleClick}
+                  onCancel={handleCancel}
+                  isCancelling={cancellingId === appointment.appointment_id}
+                />
               ))}
             </ul>
           )}
         </div>
 
-        {selectedAppointment && (
+        {selectedAppointment && selectedDoctor && (
           <AppointmentScheduleModal
+            doctor={selectedDoctor}
             isOpen={showRescheduleModal}
             onClose={() => {
               setShowRescheduleModal(false)
               setSelectedAppointment(null)
+              setSelectedDoctor(null)
             }}
             mode="reschedule"
             appointmentId={selectedAppointment.appointment_id}
             initialDate={selectedAppointment.appointment_date}
             initialTime={formatTime(selectedAppointment.start_time)}
+            initialSpecializationId={selectedAppointment.doctor_specialization_id}
+            initialConsultationType={selectedAppointment.consultation_type}
           />
         )}
 

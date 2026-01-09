@@ -13,8 +13,8 @@ const DoctorCard = ({doctor} : DoctorProps) => {
 
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-      <div className="space-y-4">
+    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow flex flex-col h-full">
+      <div className="space-y-4 flex-1">
         <div>
           <h3 className="text-xl font-semibold text-gray-900">{doctor.name}</h3>
           <p className="text-gray-600">{doctor.hospital_name}</p>
@@ -46,14 +46,14 @@ const DoctorCard = ({doctor} : DoctorProps) => {
               ))
             }
         </div>
-
-        <button
-          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          onClick={() => {setIsModalOpen(true)}}
-        >
-          Book Appointment
-        </button>
       </div>
+
+      <button
+        className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mt-4"
+        onClick={() => {setIsModalOpen(true)}}
+      >
+        Book Appointment
+      </button>
 
       <AppointmentScheduleModal
         doctor={doctor}
