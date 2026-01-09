@@ -5,6 +5,7 @@ import { type AppointmentResponse, type ErrorResponse } from "../types/api.types
 import { formatDate, formatTime } from "../utils/date-time.utils";
 import { getAppointmentStatusBadgeClass, getPaymentStatusBadgeClass } from "../utils/status-badge.utils";
 import { formatToIDR } from "../utils/currency.utils";
+import Navbar from "./navbar";
 
 const AppointmentList = () => {
 
@@ -82,11 +83,13 @@ const AppointmentList = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <div className="py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* Header */}
-        <div className="mb-8">
+          {/* Header */}
+          <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">My Appointments</h1>
           <p className="mt-2 text-sm text-gray-700">View and Manage Your Appointments</p>
         </div>
@@ -161,6 +164,7 @@ const AppointmentList = () => {
           >
             Back to my Appointment
           </button>
+        </div>
         </div>
       </div>
     </div>

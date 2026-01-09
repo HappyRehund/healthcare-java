@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import API_CONFIG from "../config/api.config";
 import type { AppointmentResponse, DoctorResponse, ErrorResponse, UserResponse } from "../types/api.types";
 import { formatToIDR } from "../utils/currency.utils";
+import Navbar from "./navbar";
 
 const AppointmentDetail = () => {
   const { id } = useParams();
@@ -157,7 +158,9 @@ const AppointmentDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <div className="py-8">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white shadow rounded-lg overflow-hidden">
           {/* Header */}
@@ -282,6 +285,7 @@ const AppointmentDetail = () => {
           >
             Back to Home
           </button>
+        </div>
         </div>
       </div>
     </div>
