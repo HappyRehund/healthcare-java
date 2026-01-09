@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { DoctorResponse } from "../types/api.types"
 import { formatToIDR } from "../utils/currency.utils"
-import BookingModal from "./booking-modal";
+import AppointmentScheduleModal from "./appointment-schedule-modal";
 
 interface DoctorProps {
   doctor: DoctorResponse
@@ -55,10 +55,11 @@ const DoctorCard = ({doctor} : DoctorProps) => {
         </button>
       </div>
 
-      <BookingModal
+      <AppointmentScheduleModal
         doctor={doctor}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        mode="booking"
       />
     </div>
   )

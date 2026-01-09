@@ -6,6 +6,7 @@ import { formatDate, formatTime } from "../utils/date-time.utils";
 import { getAppointmentStatusBadgeClass, getPaymentStatusBadgeClass } from "../utils/status-badge.utils";
 import { formatToIDR } from "../utils/currency.utils";
 import Navbar from "./navbar";
+import AppointmentScheduleModal from "./appointment-schedule-modal";
 
 const AppointmentList = () => {
 
@@ -14,6 +15,9 @@ const AppointmentList = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<AppointmentResponse | null>(null);
+
 
   useEffect(() => {
 
@@ -53,6 +57,11 @@ const AppointmentList = () => {
     fetchAppointments();
 
   }, [])
+
+  const handleRescheduleClick = (appointment: AppointmentResponse) => {
+    setSelectedAppointment(appointment);
+    setShowRescheduleModal(true);
+  }
 
   const handleCancel = async (appointmentId: number) => {
     if(!window.confirm('Are you sure you want to cancel this appointment?')) {
@@ -162,15 +171,26 @@ const AppointmentList = () => {
                           {formatTime(appointment.start_time)} - {formatTime(appointment.end_time)}
                         </p>
                       </div>
+
                       {appointment.status === 'PENDING' && (
-                        <button
-                          onClick={() => handleCancel(appointment.appointment_id)}
-                          disabled={cancellingId === appointment.appointment_id}
-                          className="text-red-600 hover:text-red-900 disabled:opacity-50 font-medium text-sm"
-                        >
-                          {cancellingId === appointment.appointment_id ? 'Cancelling...' : 'Cancel'}
-                        </button>
+                        <>
+                          <button
+                            onClick={() => handleRescheduleClick(appointment)}
+                            className="text-yellow-600 hover:text-yellow-900 font-medium text-sm"
+                          >
+                            Reschedule
+                          </button>
+
+                          <button
+                            onClick={() => handleCancel(appointment.appointment_id)}
+                            disabled={cancellingId === appointment.appointment_id}
+                            className="text-red-600 hover:text-red-900 disabled:opacity-50 font-medium text-sm"
+                          >
+                            {cancellingId === appointment.appointment_id ? 'Cancelling...' : 'Cancel'}
+                          </button>
+                        </>
                       )}
+
                       <button
                         onClick={() => navigate(`/appointments/${appointment.appointment_id}`)}
                         className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
@@ -212,13 +232,27 @@ const AppointmentList = () => {
           )}
         </div>
 
+        {selectedAppointment && (
+          <AppointmentScheduleModal
+            isOpen={showRescheduleModal}
+            onClose={() => {
+              setShowRescheduleModal(false)
+              setSelectedAppointment(null)
+            }}
+            mode="reschedule"
+            appointmentId={selectedAppointment.appointment_id}
+            initialDate={selectedAppointment.appointment_date}
+            initialTime={formatTime(selectedAppointment.start_time)}
+          />
+        )}
+
         {/* Back Button */}
         <div className="mt-6 text-center">
           <button
-            onClick={() => navigate("/appointments")}
+            onClick={() => navigate("/home")}
             className="text-indigo-600 hover:text-indigo-500"
           >
-            Back to my Appointment
+            Back to Home
           </button>
         </div>
         </div>
