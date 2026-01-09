@@ -37,8 +37,8 @@ const LandingPage = () => {
       )
 
       if (!response.ok){
-              const errorData: ErrorResponse = await response.json();
-              throw new Error(errorData.message);
+        const errorData: ErrorResponse = await response.json();
+        throw new Error(errorData.message);
       }
 
       const data: GetDoctorsResponse = await response.json();

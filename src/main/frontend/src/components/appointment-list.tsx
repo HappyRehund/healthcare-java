@@ -13,6 +13,7 @@ const AppointmentList = () => {
   const [appointments, setAppointments] = useState<AppointmentResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cancellingId, setCancellingId] = useState<number | null>(null);
 
   useEffect(() => {
 
@@ -52,6 +53,52 @@ const AppointmentList = () => {
     fetchAppointments();
 
   }, [])
+
+  const handleCancel = async (appointmentId: number) => {
+    if(!window.confirm('Are you sure you want to cancel this appointment?')) {
+      return;
+    }
+
+    setCancellingId(appointmentId);
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.APPOINTMENTS}/${appointmentId}/cancel`,
+        {
+          method: "PUT",
+          headers: {
+            accept: "*/*",
+            Authorization: `Bearer ${token}`
+          }
+        }
+      )
+
+      if (!response.ok){
+        const errorData: ErrorResponse = await response.json();
+        throw new Error(errorData.message);
+      }
+
+      navigate(
+        `/appointments/${appointmentId}`,
+        {
+          state: {
+            message: "Appointment cancelled successfuly",
+            type: "success"
+          }
+        }
+      )
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("failed to login")
+      }
+    } finally {
+      setCancellingId(null);
+    }
+
+  }
 
   if (loading) {
     return (
@@ -115,6 +162,15 @@ const AppointmentList = () => {
                           {formatTime(appointment.start_time)} - {formatTime(appointment.end_time)}
                         </p>
                       </div>
+                      {appointment.status === 'PENDING' && (
+                        <button
+                          onClick={() => handleCancel(appointment.appointment_id)}
+                          disabled={cancellingId === appointment.appointment_id}
+                          className="text-red-600 hover:text-red-900 disabled:opacity-50 font-medium text-sm"
+                        >
+                          {cancellingId === appointment.appointment_id ? 'Cancelling...' : 'Cancel'}
+                        </button>
+                      )}
                       <button
                         onClick={() => navigate(`/appointments/${appointment.appointment_id}`)}
                         className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"

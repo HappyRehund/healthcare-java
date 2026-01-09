@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import API_CONFIG from "../config/api.config";
 import type { AppointmentResponse, DoctorResponse, ErrorResponse, UserResponse } from "../types/api.types";
 import { formatToIDR } from "../utils/currency.utils";
@@ -14,6 +14,10 @@ const AppointmentDetail = () => {
   const [doctorData, setDoctorData] = useState<DoctorResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const location = useLocation();
+  const successMessage = location.state?.message;
+  const messageType = location.state?.type;
 
   useEffect(() => {
     const fetchAllData = async() => {
@@ -162,9 +166,14 @@ const AppointmentDetail = () => {
       <Navbar />
       <div className="py-8">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* success message */}
+        {successMessage && messageType === "success" && (
+          <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
+            {successMessage}
+          </div>
+        )}
         <div className="bg-white shadow rounded-lg overflow-hidden">
           {/* Header */}
-
           <div className="px-6 py-8 bg-indigo-600">
             <h1 className="text-xl font-semibold text-white">
               Appointment Details
