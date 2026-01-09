@@ -3,6 +3,7 @@ import LoginPage from "./components/login-page";
 import LandingPage from "./components/landing-page";
 import RegisterPage from "./components/register-page";
 import AppointmentDetail from "./components/appointment-detail";
+import AppointmentList from "./components/appointment-list";
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -33,6 +34,14 @@ function App() {
           }
         />
         <Route
+          path="/appointments/"
+          element={
+            <ProtectedRoute>
+              <AppointmentList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/appointments/:id"
           element={
             <ProtectedRoute>
@@ -40,6 +49,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route path="/" element={<Navigate to="/home" replace />} />
       </Routes>
     </Router>
