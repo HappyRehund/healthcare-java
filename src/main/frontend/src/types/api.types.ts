@@ -90,6 +90,7 @@ export interface AppointmentResponse {
   end_time: string;
   status: 'PENDING' | 'SCHEDULED' | 'CANCELLED' | 'COMPLETED' | 'NO_SHOW';
   payment_detail: PaymentResponse;
+  meeting_id: string;
 }
 
 export interface ErrorResponse {

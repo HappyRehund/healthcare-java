@@ -113,6 +113,14 @@ const AppointmentDetail = () => {
     return isAppointmentPending && isPaymentPending && hasPaymentUrl
   }
 
+  const shouldShowMeetingButton = (): boolean => {
+    const isAppointmentScheduled = appointmentData?.status === 'SCHEDULED';
+    const isPaymentCompleted =
+      appointmentData?.payment_detail?.payment_status === 'COMPLETED';
+
+    return isAppointmentScheduled && isPaymentCompleted;
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -278,6 +286,15 @@ const AppointmentDetail = () => {
                         className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                       >
                         Proceed to Payment
+                      </button>
+                    )}
+
+                    {shouldShowMeetingButton() && (
+                      <button
+                        onClick={() => navigate("/appointments/"+id+"/meeting")}
+                        className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                      >
+                        Proceed to Meeting Room
                       </button>
                     )}
                   </div>
