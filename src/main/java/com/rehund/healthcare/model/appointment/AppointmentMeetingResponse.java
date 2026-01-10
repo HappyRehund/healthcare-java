@@ -4,44 +4,21 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.rehund.healthcare.common.constant.AppointmentStatus;
-import com.rehund.healthcare.model.payment.PaymentResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-
-@Builder
 @Data
-@NoArgsConstructor
+@Builder
 @AllArgsConstructor
+@NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AppointmentResponse {
-    private Long appointmentId;
-
+public class AppointmentMeetingResponse {
     private Long patientId;
-    private String patientName;
-
     private Long doctorId;
-    private String doctorName;
 
-    private Long doctorSpecializationId;
-
-    private Long hospitalId;
-    private String hospitalName;
-
-    private String consultationType;
-
-    private LocalDate appointmentDate;
-    private LocalTime startTime;
-    private LocalTime endTime;
-
-    private AppointmentStatus status;
-
-    private PaymentResponse paymentDetail;
-
+    private AppointmentStatus appointmentStatus;
     private String meetingId;
 }

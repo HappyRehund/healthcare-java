@@ -1,6 +1,7 @@
 package com.rehund.healthcare.controller.nonadmin.appointment;
 
 import com.rehund.healthcare.model.appointment.AppointmentBookRequest;
+import com.rehund.healthcare.model.appointment.AppointmentMeetingResponse;
 import com.rehund.healthcare.model.appointment.AppointmentRescheduleRequest;
 import com.rehund.healthcare.model.appointment.AppointmentResponse;
 import com.rehund.healthcare.model.user.UserInfo;
@@ -40,6 +41,19 @@ public class AppointmentController {
             @PathVariable Long appointmentId
     ){
         AppointmentResponse response = appointmentService.findById(appointmentId);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{appointmentId}/meeting")
+    public ResponseEntity<AppointmentMeetingResponse> getAppointmentMeetingDetails(
+            @PathVariable Long appointmentId
+    ){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        UserInfo userInfo = (UserInfo) authentication.getPrincipal();
+
+        AppointmentMeetingResponse response = appointmentService.getAppointmentMeetingDetails(userInfo.getUserId(), appointmentId);
 
         return ResponseEntity.ok(response);
     }

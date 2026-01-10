@@ -13,6 +13,7 @@ import com.rehund.healthcare.model.payment.PaymentResponse;
 import com.rehund.healthcare.repository.appointment.AppointmentRepository;
 import com.rehund.healthcare.repository.payment.PaymentRepository;
 import com.rehund.healthcare.repository.user.UserRepository;
+import com.rehund.healthcare.service.videosdk.MeetingService;
 import com.xendit.exception.XenditException;
 import com.xendit.model.Invoice;
 import jakarta.transaction.Transactional;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -31,6 +33,7 @@ public class XenditServiceImpl implements XenditService {
     private final AppointmentRepository appointmentRepository;
     private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;
+    private final MeetingService meetingService;
 
     @Override
     @Transactional
@@ -106,6 +109,10 @@ public class XenditServiceImpl implements XenditService {
 
         appointment.setStatus(AppointmentStatus.SCHEDULED);
         appointmentRepository.save(appointment);
+
+        if (Objects.equals(appointment.getConsultationType(), "ONLINE")) {
+            meetingService.createMeetingRoom(appointment);
+        }
     }
 
     private void handleOnCancellation(Payment payment){

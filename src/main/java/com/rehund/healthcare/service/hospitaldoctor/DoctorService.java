@@ -17,9 +17,11 @@ public interface DoctorService {
     Page<DoctorResponse> getAll(String keyword, Pageable pageable);
     DoctorResponse register(DoctorRegistrationRequest request);
     DoctorResponse get(Long doctorId);
+    DoctorResponse getByUserId(Long userId);
     DoctorResponse addDoctorSpecializations(Long doctorId, DoctorSpecializationRequest request);
     DoctorResponse updateDoctorAvailability(Long doctorId, DoctorAvailabilityRequest request);
 
+    Doctor getDoctorById(Long doctorId);
     Doctor getDoctorByUserId(Long userId);
 
     void deleteDoctorAvailability(Long doctorId, Long doctorAvailabilityId);

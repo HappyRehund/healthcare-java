@@ -47,9 +47,11 @@ public class DoctorServiceImpl implements DoctorService {
     private final CacheService cacheService;
 
     public static final String DOCTOR_CACHE_KEY = "cache:doctor:";
+    public static final String DOCTOR_USER_CACHE_KEY = "cache:doctor:user:";
     private static final Duration DOCTOR_CACHE_TTL = Duration.ofHours(1);
 
-    private Doctor getDoctorById(Long doctorId) {
+    @Override
+    public Doctor getDoctorById(Long doctorId) {
         String key = DOCTOR_CACHE_KEY + doctorId;
 
         return cacheService.getOrLoad(
@@ -58,6 +60,20 @@ public class DoctorServiceImpl implements DoctorService {
                 DOCTOR_CACHE_TTL,
                 () -> doctorRepository.findById(doctorId)
                         .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + doctorId))
+        );
+
+    }
+
+    @Override
+    public Doctor getDoctorByUserId(Long userId) {
+        String key = DOCTOR_USER_CACHE_KEY + userId;
+
+        return cacheService.getOrLoad(
+                key,
+                Doctor.class,
+                DOCTOR_CACHE_TTL,
+                () -> doctorRepository.findByUserId(userId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + userId))
         );
 
     }
@@ -264,9 +280,9 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
-    public Doctor getDoctorByUserId(Long userId) {
-        return doctorRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Doctor with User Id " + userId + " not found"));
+    public DoctorResponse getByUserId(Long userId) {
+        Doctor doctor = getDoctorByUserId(userId);
+        return mapDoctorToDoctorResponse(doctor);
     }
 
     private DoctorResponse mapDoctorToDoctorResponse(Doctor doctor){

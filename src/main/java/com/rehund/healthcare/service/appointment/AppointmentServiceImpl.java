@@ -1,6 +1,7 @@
 package com.rehund.healthcare.service.appointment;
 
 import com.rehund.healthcare.common.constant.AppointmentStatus;
+import com.rehund.healthcare.common.constant.RoleType;
 import com.rehund.healthcare.common.exception.ForbiddenAccessException;
 import com.rehund.healthcare.common.exception.ResourceNotFoundException;
 import com.rehund.healthcare.common.exception.appointment.AppointmentConflictException;
@@ -11,23 +12,30 @@ import com.rehund.healthcare.entity.hospitaldoctor.Hospital;
 import com.rehund.healthcare.entity.hospitaldoctor.HospitalDoctorFee;
 import com.rehund.healthcare.entity.user.User;
 import com.rehund.healthcare.model.appointment.AppointmentBookRequest;
+import com.rehund.healthcare.model.appointment.AppointmentMeetingResponse;
 import com.rehund.healthcare.model.appointment.AppointmentRescheduleRequest;
 import com.rehund.healthcare.model.appointment.AppointmentResponse;
+import com.rehund.healthcare.model.hospitaldoctor.DoctorResponse;
 import com.rehund.healthcare.model.payment.PaymentResponse;
+import com.rehund.healthcare.model.user.UserResponse;
 import com.rehund.healthcare.repository.appointment.AppointmentRepository;
 import com.rehund.healthcare.repository.hospitaldoctor.DoctorAvailabilityRepository;
 import com.rehund.healthcare.repository.hospitaldoctor.DoctorRepository;
 import com.rehund.healthcare.repository.hospitaldoctor.HospitalDoctorFeeRepository;
 import com.rehund.healthcare.repository.hospitaldoctor.HospitalRepository;
 import com.rehund.healthcare.repository.user.UserRepository;
+import com.rehund.healthcare.service.hospitaldoctor.DoctorService;
 import com.rehund.healthcare.service.payment.PaymentService;
+import com.rehund.healthcare.service.user.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +49,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final DoctorAvailabilityRepository doctorAvailabilityRepository;
     private final HospitalRepository hospitalRepository;
 
+    private final UserService userService;
+    private final DoctorService doctorService;
     private final PaymentService paymentService;
 
     @Override
@@ -224,6 +234,50 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
+    public AppointmentMeetingResponse getAppointmentMeetingDetails(Long userId, Long appointmentId) {
+        UserResponse user = userService.getUserById(userId);
+        AppointmentResponse appointmentResponse = findById(appointmentId);
+
+        if(!appointmentResponse.getStatus().equals(AppointmentStatus.SCHEDULED)) {
+            throw new IllegalArgumentException("Meeting details are only available for SCHEDULED appointments");
+        }
+
+        if(user.getRoles().contains(RoleType.DOCTOR)){
+            DoctorResponse doctorResponse = doctorService.getByUserId(user.getUserId());
+
+            if(!Objects.equals(doctorResponse.getDoctorId(), appointmentResponse.getDoctorId())){
+                throw new ForbiddenAccessException("Can't access other's appointment meeting details");
+            }
+
+            return AppointmentMeetingResponse.builder()
+                    .doctorId(doctorResponse.getDoctorId())
+                    .appointmentStatus(appointmentResponse.getStatus())
+                    .build();
+        }
+
+        if (!Objects.equals(user.getUserId(), appointmentResponse.getPatientId())) {
+            throw new ForbiddenAccessException("Can't access other's appointment meeting details");
+        }
+
+        LocalDate today = LocalDate.now();
+        if(!today.equals(appointmentResponse.getAppointmentDate())) {
+            throw new IllegalArgumentException("Meeting details are only available on the appointment date");
+        }
+
+        LocalTime now = LocalTime.now();
+        if(now.isBefore(appointmentResponse.getStartTime()) || now.isAfter(appointmentResponse.getEndTime())) {
+            throw new IllegalArgumentException("Meeting details are only available during the appointment time");
+        }
+
+        return AppointmentMeetingResponse
+                .builder()
+                .patientId(appointmentResponse.getPatientId())
+                .doctorId(appointmentResponse.getDoctorId())
+                .appointmentStatus(appointmentResponse.getStatus())
+                .build();
+    }
+
+    @Override
     @Transactional
     public void cancelAppointment(Long userId, Long appointmentId) {
         Appointment appointment = appointmentRepository.findByIdAndLock(appointmentId)
@@ -259,6 +313,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .startTime(appointment.getStartTime())
                 .endTime(appointment.getEndTime())
                 .status(appointment.getStatus())
+                .meetingId(appointment.getMeetingId())
                 .build();
     }
 
@@ -278,6 +333,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .endTime(appointment.getEndTime())
                 .status(appointment.getStatus())
                 .paymentDetail(paymentResponse)
+                .meetingId(appointment.getMeetingId())
                 .build();
     }
 }
