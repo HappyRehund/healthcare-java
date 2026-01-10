@@ -1,5 +1,6 @@
 export type RoleType = 'PATIENT' | 'DOCTOR' | 'HOSPITAL_ADMIN' | 'SUPER_ADMIN';
 
+export type AppointmentStatus = 'PENDING' | 'SCHEDULED' | 'CANCELLED' | 'COMPLETED' | 'NO_SHOW';
 
 export interface LoginResponse {
   token: string;
@@ -88,8 +89,16 @@ export interface AppointmentResponse {
   appointment_date: string;
   start_time: string;
   end_time: string;
-  status: 'PENDING' | 'SCHEDULED' | 'CANCELLED' | 'COMPLETED' | 'NO_SHOW';
+  status: AppointmentStatus;
   payment_detail: PaymentResponse;
+  meeting_id: string;
+}
+
+export interface AppointmentMeetingResponse {
+  patient_id: number;
+  doctor_id: number;
+
+  appointment_status: AppointmentStatus;
   meeting_id: string;
 }
 
