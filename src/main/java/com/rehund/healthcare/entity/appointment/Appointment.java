@@ -50,6 +50,9 @@ public class Appointment {
     @Column(name = "consultation_type", nullable = false, length = 10)
     private String consultationType;
 
+    @Column(name= "meeting_id")
+    private String meetingId;
+
     @Column(nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
     private AppointmentStatus status;
