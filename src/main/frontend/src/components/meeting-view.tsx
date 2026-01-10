@@ -1,5 +1,6 @@
 import { useMeeting } from '@videosdk.live/react-sdk';
-import React, { useState } from 'react'
+import { useState } from 'react'
+import ParticipantView from './participant-view';
 
 interface MeetingViewProps {
   onMeetingLeave: () => void;
