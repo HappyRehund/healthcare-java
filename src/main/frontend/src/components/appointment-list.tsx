@@ -17,7 +17,6 @@ const AppointmentList = () => {
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentResponse | null>(null);
   const [selectedDoctor, setSelectedDoctor] = useState<DoctorResponse | null>(null);
-  const [loadingDoctor, setLoadingDoctor] = useState(false);
 
 
   useEffect(() => {
@@ -61,7 +60,6 @@ const AppointmentList = () => {
 
   const handleRescheduleClick = async (appointment: AppointmentResponse) => {
     setSelectedAppointment(appointment);
-    setLoadingDoctor(true);
 
     try {
       const token = localStorage.getItem('token');
@@ -90,8 +88,6 @@ const AppointmentList = () => {
       } else {
         setError("Failed to load doctor data");
       }
-    } finally {
-      setLoadingDoctor(false);
     }
   }
 
