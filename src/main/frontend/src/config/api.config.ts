@@ -6,7 +6,8 @@ const API_CONFIG = {
     DOCTORS: '/api/v1/doctors',
     APPOINTMENTS: '/api/v1/appointments',
     USERS: '/api/v1/users'
-  }
+  },
+  VIDEOSDK_TOKEN: import.meta.env.VITE_VIDEOSDK_TOKEN
 } as const;
 
 export default API_CONFIG;
